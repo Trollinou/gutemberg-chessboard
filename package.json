@@ -40,22 +40,23 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "watch": "node scripts/build.cjs --watch",
+    "build": "node scripts/build.cjs",
     "preview": "vite preview",
     "format": "prettier --write src/",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --fix --ignore-path .gitignore"
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --fix"
   },
   "dependencies": {
     "chess.js": "^1.4.0",
     "chessground": "^9.2.1"
   },
   "peerDependencies": {
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "@wordpress/blocks": "*",
     "@wordpress/block-editor": "*",
+    "@wordpress/blocks": "*",
     "@wordpress/components": "*",
-    "@wordpress/element": "*"
+    "@wordpress/element": "*",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.1.4",
@@ -63,11 +64,15 @@
     "@types/node": "^18.11.18",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
-    "@wordpress/blocks": "^15.20.0",
+    "@typescript-eslint/eslint-plugin": "^8.60.0",
+    "@typescript-eslint/parser": "^8.60.0",
     "@wordpress/block-editor": "^15.20.0",
+    "@wordpress/blocks": "^15.20.0",
     "@wordpress/components": "^34.0.0",
     "@wordpress/element": "^7.0.0",
     "eslint": "^8.34.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "prettier": "^2.8.3",
     "typescript": "^5.0.2",
     "vite": "^4.0.4"

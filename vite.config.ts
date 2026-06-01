@@ -9,7 +9,7 @@ export default defineConfig({
     lib: {
       entry: resolve(__dirname, 'src/index.jsx'),
       name: 'GutenbergChessboard',
-      formats: ['es'],
+      formats: ['iife'],
     },
     rollupOptions: {
       external: [
@@ -22,6 +22,7 @@ export default defineConfig({
         '@wordpress/i18n',
       ],
       output: {
+        entryFileNames: 'gutemberg-chessboard.js',
         globals: {
           react: 'React',
           'react-dom': 'ReactDOM',

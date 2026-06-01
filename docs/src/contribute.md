@@ -7,15 +7,15 @@ Contributions are very welcome. Thanks for your interest!
 ::: code-group
 
 ```sh[HTTPS]
-git clone https://github.com/qwerty084/vue3-chessboard.git
+git clone https://github.com/trollinou/vue3-chessboard.git
 ```
 
 ```sh[SSH]
-git clone git@github.com:qwerty084/vue3-chessboard.git
+git clone git@github.com:trollinou/vue3-chessboard.git
 ```
 
 ```sh[GitHub CLI]
-gh repo clone qwerty084/vue3-chessboard
+gh repo clone trollinou/vue3-chessboard
 ```
 
 :::

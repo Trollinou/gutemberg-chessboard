@@ -9,7 +9,7 @@ Before submitting your contribution, please read through the following guide.
 To get started just clone the project:
 
 ```sh
-git clone https://github.com/qwerty084/vue3-chessboard.git
+git clone https://github.com/trollinou/vue3-chessboard.git
 ```
 
 Install the required dependencies:

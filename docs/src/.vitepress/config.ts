@@ -50,7 +50,7 @@ export default {
       },
     ],
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/qwerty084/gutemberg-chessboard' },
+      { icon: 'github', link: 'https://github.com/trollinou/gutemberg-chessboard' },
     ],
   },
 };

@@ -63,14 +63,16 @@ export class BoardApi {
   //  PRIVATE INTERAL METHODS:
   //
 
+  private isSyncing = false;
+
   /**
    * syncs chess.js state with the board
    * @private
    */
-  private updateGameState({ updateFen = true } = {}): void {
+  private updateGameState({ updateFen = true, rawFen = '' } = {}): void {
     if (!this.boardState.historyViewerState.isEnabled) {
       if (updateFen) {
-        this.board.set({ fen: this.game.fen() });
+        this.board.set({ fen: rawFen || this.game.fen() });
       }
 
       this.board.state.turnColor = this.getTurnColor();
@@ -92,6 +94,63 @@ export class BoardApi {
     }
 
     this.emitEvents();
+  }
+
+  /**
+   * Reconstructs the game state and FEN directly from Chessground's pieces.
+   * @private
+   */
+  private syncGameFromBoard(): void {
+    if (this.isSyncing) return;
+    this.isSyncing = true;
+    try {
+      const pieces = this.board.state.pieces;
+      const tempGame = new Chess();
+      tempGame.clear();
+      const roleToPieceType: Record<string, string> = {
+        pawn: 'p',
+        knight: 'n',
+        bishop: 'b',
+        rook: 'r',
+        queen: 'q',
+        king: 'k',
+      };
+
+      for (const [square, piece] of pieces) {
+        const type = roleToPieceType[piece.role];
+        if (type) {
+          tempGame.put(
+            {
+              type: type as any,
+              color: piece.color === 'white' ? 'w' : 'b',
+            },
+            square as Square
+          );
+        }
+      }
+
+      const placement = tempGame.fen().split(' ')[0];
+      const currentFenParts = this.game.fen().split(' ');
+      const turn = currentFenParts[1] || 'w';
+      const castling = currentFenParts[2] || '-';
+      const ep = currentFenParts[3] || '-';
+      const halfmove = currentFenParts[4] || '0';
+      const fullmove = currentFenParts[5] || '1';
+
+      const newFen = `${placement} ${turn} ${castling} ${ep} ${halfmove} ${fullmove}`;
+
+      try {
+        this.game.load(newFen);
+      } catch (e) {
+        // Ignore validation errors for invalid setups during position configuration
+      }
+
+      this.emit('move', {
+        after: newFen,
+      } as any);
+    } finally {
+      this.isSyncing = false;
+    }
   }
 
   /**
@@ -520,9 +579,13 @@ export class BoardApi {
    * Caution: this will erase the game history. To set position with history call loadPgn with a pgn instead
    */
   setPosition(fen: string): void {
-    this.game.load(fen);
+    try {
+      this.game.load(fen);
+    } catch (e) {
+      // Ignore validation errors for invalid positions during editing
+    }
     this.boardState.historyViewerState = { isEnabled: false };
-    this.updateGameState();
+    this.updateGameState({ updateFen: true, rawFen: fen });
   }
 
   /**
@@ -538,6 +601,7 @@ export class BoardApi {
         role: chessJSPieceToLichessPiece[piece.type] as Role,
       });
       this.board.setPieces(current);
+      this.syncGameFromBoard();
       return true;
     } else {
       const result = this.game.put(piece, square);
@@ -555,7 +619,13 @@ export class BoardApi {
   removePiece(square: Square): void {
     const pieces = this.board.state.pieces;
     pieces.delete(square);
+    this.board.setPieces(pieces);
     this.game.remove(square);
+    if (this.board.state.movable.free) {
+      this.syncGameFromBoard();
+    } else {
+      this.updateGameState();
+    }
   }
 
   /**
@@ -564,7 +634,12 @@ export class BoardApi {
   clearBoard(): void {
     this.game.clear();
     this.boardState.historyViewerState = { isEnabled: false };
-    this.updateGameState();
+    if (this.board.state.movable.free) {
+      this.board.setPieces(new Map());
+      this.syncGameFromBoard();
+    } else {
+      this.updateGameState();
+    }
   }
 
   /**
@@ -651,6 +726,15 @@ export class BoardApi {
           }
         : this.changeTurn.bind(this); // in case user provided config with { movable: { events: { after: undefined } } }
     }
+
+    const userChange = config.events?.change;
+    if (!config.events) config.events = {};
+    config.events.change = () => {
+      if (this.board.state.movable?.free) {
+        this.syncGameFromBoard();
+      }
+      if (userChange) userChange();
+    };
 
     const { fen, ...configWithoutFen } = config;
     this.board.set(configWithoutFen);

@@ -1,7 +1,7 @@
 
 .cg-wrap {
-  width: 700px;
-  height: 700px;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .main-board {
@@ -362,7 +362,7 @@ cg-board .king.black {
   .main-wrap {
     width: 90vh;
     margin-inline: auto;
-    max-width: 700px;
+    max-width: min(700px, 100%);
   }
 }
 
@@ -389,4 +389,135 @@ cg-board .king.black {
   cursor: pointer;
   width: 100%;
   height: 100%;
+}
+
+/* Editor Piece Palette Styles */
+
+.editor-palette-container {
+  margin-top: 15px;
+  background-color: #f7f7f7;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.editor-palette-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.editor-palette-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.editor-palette-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.editor-palette-board {
+  position: relative;
+  display: contents;
+}
+
+cg-board.editor-palette-board {
+  background-image: none !important;
+}
+
+.editor-palette-piece {
+  aspect-ratio: 1;
+  background: #e9e9e9;
+  border: 1px solid #dcdcdc;
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  padding: 0;
+  transition: all 0.2s ease;
+  min-height: 30px;
+}
+
+.editor-palette-piece:hover {
+  background: #e0e0e0;
+  border-color: #bbb;
+}
+
+.editor-palette-container .editor-palette-piece.active {
+  background: #3858e9 !important;
+  border-color: #3858e9 !important;
+  box-shadow: inset 0 0 0 2px #fff, 0 0 0 2px #3858e9 !important;
+}
+
+.editor-palette-piece .piece-inner {
+  position: absolute;
+  top: 5%;
+  left: 5%;
+  width: 90%;
+  height: 90%;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.editor-palette-eraser {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffebee;
+  border: 1px solid #ffcdd2;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #c62828;
+  aspect-ratio: 1;
+  padding: 0;
+  font-size: 18px;
+  min-height: 40px;
+}
+
+.editor-palette-eraser:hover {
+  background: #ffcdd2;
+}
+
+.editor-palette-container .editor-palette-eraser.active {
+  background: #d32f2f !important;
+  color: #fff !important;
+  border-color: #d32f2f !important;
+  box-shadow: inset 0 0 0 2px #fff, 0 0 0 2px #d32f2f !important;
+}
+
+/* Sidebar specific palette styles */
+.editor-palette-grid-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.editor-palette-row-sidebar {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 3px;
+}
+
+.editor-palette-row-eraser {
+  display: flex;
+  margin-top: 4px;
+}
+
+.editor-palette-row-eraser .editor-palette-eraser {
+  width: 100%;
+  height: 38px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 500;
+  border-radius: 4px;
+  aspect-ratio: auto;
 }

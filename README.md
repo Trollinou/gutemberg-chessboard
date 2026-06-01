@@ -31,6 +31,9 @@ The block supports the following settings saved in the block metadata:
 - **`playerColor`**: Moveable color (`both`, `white`, or `black`).
 - **`showThreats`**: Overlay threat highlight lines/circles.
 - **`boardConfig`**: Object configuration representing Chessground parameters.
+- **`reactiveConfig`**: Enable reactive config updates (`boolean`).
+- **`promotionDialogState`**: Internal object tracking pawn promotion dialog overlay.
+- **`historyViewerState`**: Internal object tracking history navigation viewer.
 
 ## Origin & Attribution
 

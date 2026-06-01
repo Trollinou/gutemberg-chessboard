@@ -1,0 +1,78 @@
+{
+  "name": "gutemberg-chessboard",
+  "version": "1.0.0",
+  "description": "gutemberg-chessboard is a Gutenberg block for creating chess web apps in WordPress",
+  "keywords": [
+    "gutenberg",
+    "wordpress",
+    "chessboard",
+    "chess",
+    "react",
+    "lichess",
+    "chessground",
+    "chess.js",
+    "typescript"
+  ],
+  "files": [
+    "dist"
+  ],
+  "license": "GPL-3.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/gutemberg-chessboard.js",
+      "types": "./dist/src/index.d.ts"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "types": "./dist/src/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trollinou/gutemberg-chessboard.git"
+  },
+  "bugs": {
+    "url": "https://github.com/trollinou/gutemberg-chessboard/issues",
+    "email": "tinou@free.fr"
+  },
+  "author": {
+    "name": "Etienne Gagnon",
+    "email": "tinou@free.fr"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "format": "prettier --write src/",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --fix --ignore-path .gitignore"
+  },
+  "dependencies": {
+    "chess.js": "^1.4.0",
+    "chessground": "^9.2.1"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "@wordpress/blocks": "*",
+    "@wordpress/block-editor": "*",
+    "@wordpress/components": "*",
+    "@wordpress/element": "*"
+  },
+  "devDependencies": {
+    "@rushstack/eslint-patch": "^1.1.4",
+    "@types/chess.js": "^0.13.4",
+    "@types/node": "^18.11.18",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@wordpress/blocks": "^15.20.0",
+    "@wordpress/block-editor": "^15.20.0",
+    "@wordpress/components": "^34.0.0",
+    "@wordpress/element": "^7.0.0",
+    "eslint": "^8.34.0",
+    "prettier": "^2.8.3",
+    "typescript": "^5.0.2",
+    "vite": "^4.0.4"
+  },
+  "prettier": {
+    "singleQuote": true
+  }
+}

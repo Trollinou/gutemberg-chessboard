@@ -1,0 +1,33 @@
+# gutemberg-chessboard
+
+A native Gutenberg chessboard block for WordPress, powered by [lichess chessground](https://github.com/lichess-org/chessground) & [chess.js](https://github.com/jhlywa/chess.js).
+
+## Features
+
+- Native Gutenberg Block interface
+- Customizable chessboard via WordPress block settings/sidebar (Inspector Controls)
+- Options to set starting position (FEN), board orientation, coordinates, and interactivity (View Only)
+- Automatic pawn promotion overlays
+- Built-in threats highlighting system
+
+## Installation
+
+Within your WordPress plugin or theme directory:
+
+```bash
+npm install gutemberg-chessboard
+```
+
+Then register the block in your block registrations or theme assets.
+
+## Block Attributes
+
+The block supports the following settings saved in the block metadata:
+
+- **`fen`**: Chess position in Forsyth-Edwards Notation.
+- **`orientation`**: Board orientation (`white` or `black`).
+- **`coordinates`**: Whether to display board ranks and files labels.
+- **`viewOnly`**: Set to true to disable piece dragging.
+- **`playerColor`**: Moveable color (`both`, `white`, or `black`).
+- **`showThreats`**: Overlay threat highlight lines/circles.
+- **`boardConfig`**: Object configuration representing Chessground parameters.

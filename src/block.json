@@ -1,0 +1,62 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "gutemberg-chessboard/chessboard",
+  "version": "1.3.3",
+  "title": "Gutenberg Chessboard",
+  "category": "widgets",
+  "icon": "games",
+  "description": "A native Gutenberg chessboard block for WordPress, powered by Chessground and chess.js.",
+  "supports": {
+    "html": false,
+    "align": ["wide", "full"]
+  },
+  "attributes": {
+    "boardConfig": {
+      "type": "object",
+      "default": {}
+    },
+    "playerColor": {
+      "type": "string",
+      "default": "both"
+    },
+    "reactiveConfig": {
+      "type": "boolean",
+      "default": false
+    },
+    "showThreats": {
+      "type": "boolean",
+      "default": false
+    },
+    "promotionDialogState": {
+      "type": "object",
+      "default": {
+        "isEnabled": false
+      }
+    },
+    "historyViewerState": {
+      "type": "object",
+      "default": {
+        "isEnabled": false
+      }
+    },
+    "fen": {
+      "type": "string",
+      "default": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+    },
+    "orientation": {
+      "type": "string",
+      "default": "white"
+    },
+    "coordinates": {
+      "type": "boolean",
+      "default": true
+    },
+    "viewOnly": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "textdomain": "gutemberg-chessboard",
+  "editorScript": "file:./index.jsx"
+}

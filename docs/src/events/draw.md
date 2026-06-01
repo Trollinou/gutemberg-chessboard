@@ -1,0 +1,47 @@
+# Draw
+
+Emitted when the game ends in a draw.
+
+## Definition
+
+```ts
+// Emit event signature
+emit(event: 'draw', payload: void): void;
+```
+
+## React Integration Example
+
+```jsx
+import { useEffect, useRef } from '@wordpress/element';
+import { BoardApi } from 'gutemberg-chessboard/src/classes/BoardApi';
+
+export default function MyChessBoard() {
+  const boardRef = useRef(null);
+
+  useEffect(() => {
+    if (!boardRef.current) return;
+
+    const boardState = {
+      showThreats: false,
+      promotionDialogState: { isEnabled: false },
+      historyViewerState: { isEnabled: false }
+    };
+
+    const emit = (event, payload) => {
+      const emit = (event) => {
+        if (event === 'draw') {
+          alert('The game ended in a draw!');
+        }
+      };
+    };
+
+    const boardAPI = new BoardApi(boardRef.current, boardState, {}, emit);
+
+    return () => {
+      if (boardAPI.board) boardAPI.board.destroy();
+    };
+  }, []);
+
+  return <div ref={boardRef} />;
+}
+```

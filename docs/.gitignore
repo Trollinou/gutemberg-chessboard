@@ -1,0 +1,6 @@
+src/.vitepress/dist
+src/.vitepress/cache
+node_modules
+src/public/*.js
+src/public/*.wasm
+src/.vitepress/cache

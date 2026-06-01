@@ -1,0 +1,37 @@
+{
+  "name": "gutemberg-chessboard-docs",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Documentation for gutemberg-chessboard",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "cp node_modules/stockfish.js/stockfish.* src/public && vitepress dev src",
+    "build": "cp node_modules/stockfish.js/stockfish.* src/public && vitepress build src --base=/gutemberg-chessboard-docs/",
+    "preview": "cp node_modules/stockfish.js/stockfish.* src/public && vitepress preview src",
+    "format": "prettier --write src/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trollinou/gutemberg-chessboard-docs.git"
+  },
+  "author": {
+    "name": "Etienne Gagnon",
+    "email": "tinou@free.fr"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/trollinou/gutemberg-chessboard-docs/issues"
+  },
+  "homepage": "https://github.com/trollinou/gutemberg-chessboard#readme",
+  "devDependencies": {
+    "@types/node": "^20.14.11",
+    "prettier": "^3.2.2",
+    "vitepress": "^1.3.1"
+  },
+  "dependencies": {
+    "stockfish.js": "^10.0.2",
+    "gutemberg-chessboard": "file:.."
+  }
+}

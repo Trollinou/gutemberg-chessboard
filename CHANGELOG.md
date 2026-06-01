@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [1.0.1] - 2026-06-01
+
+### Added
+- Interactive chessboard position editor (setup mode) within WordPress Gutenberg edit mode.
+- Visual Piece Palette and Eraser tool integrated inside block settings sidebar (Inspector Controls).
+- Settings to customize FEN parameters directly: Active Turn (first move) and Castling Rights.
+- Auto-focus selection handler targeting the block container to resolve Chessground stopPropagation event capturing.
+- Adaptive styling for the Piece Palette to fit narrow sidebar layouts without scrolling.
+- Fixed outline selection coordinates overflow clipping.
 
 ## [1.0.0] - 2026-06-01
 

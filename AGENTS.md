@@ -46,6 +46,9 @@ Tout développement ou modification doit respecter strictement les règles suiva
 *   Déclarer le `textdomain` dans `block.json` (`"textdomain": "gutemberg-chessboard"`).
 *   Utiliser les fonctions de traduction de `@wordpress/i18n` (ex: `__('Chessboard Settings', 'gutemberg-chessboard')`) pour toutes les chaînes de caractères visibles par l'utilisateur.
 
+### F. Version d'API (apiVersion dans `block.json`)
+*   **API Version 2** : Le bloc doit impérativement rester enregistré avec `"apiVersion": 2` dans `block.json`. Ne pas passer à la version 3, car le rendu sous forme d'iframe (introduit par l'API v3) perturbe les calculs de coordonnées de souris/tactiles de *Chessground*, provoquant des décalages lors du glisser-déposer des pièces dans l'éditeur de blocs.
+
 ---
 
 ## 3. Flux Frontend et Hydratation

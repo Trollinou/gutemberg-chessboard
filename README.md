@@ -31,3 +31,8 @@ The block supports the following settings saved in the block metadata:
 - **`playerColor`**: Moveable color (`both`, `white`, or `black`).
 - **`showThreats`**: Overlay threat highlight lines/circles.
 - **`boardConfig`**: Object configuration representing Chessground parameters.
+
+## Origin & Attribution
+
+This project is a complete rewrite of the original [vue3-chessboard](https://github.com/qwerty084/vue3-chessboard) Vue 3 component library, adapted to run as a native Gutenberg block in the React-based WordPress environment.
+

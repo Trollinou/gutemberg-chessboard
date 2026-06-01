@@ -14,3 +14,10 @@ This package registers a native Gutenberg block so that you can visually configu
 - **Custom Events**: Listen for check, checkmate, stalemate, draw, move, and pawn promotions.
 
 [Get Started &rarr;](/getting-started)
+
+---
+
+## Origin & Attribution
+
+This block is a complete rewrite of the original Vue 3 [vue3-chessboard](https://github.com/qwerty084/vue3-chessboard) component library, adapted to run inside React/WordPress environments.
+

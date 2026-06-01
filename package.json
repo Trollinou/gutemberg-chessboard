@@ -1,7 +1,7 @@
 {
   "name": "gutemberg-chessboard",
   "version": "1.0.0",
-  "description": "gutemberg-chessboard is a Gutenberg block for creating chess web apps in WordPress",
+  "description": "WordPress Gutenberg block rewritten from the original Vue 3 vue3-chessboard component (https://github.com/qwerty084/vue3-chessboard)",
   "keywords": [
     "gutenberg",
     "wordpress",

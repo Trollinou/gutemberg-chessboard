@@ -1,3 +1,3 @@
-# vue3-chessboard-docs
+# gutemberg-chessboard-docs
 
-Documentation for [vue3-chessboard](https://github.com/trollinou/vue3-chessboard).
+Documentation for [gutemberg-chessboard](https://github.com/trollinou/gutemberg-chessboard).

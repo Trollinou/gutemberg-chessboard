@@ -1,5 +1,5 @@
-import { type BoardApi } from 'vue3-chessboard';
-import { SquareKey } from 'vue3-chessboard';
+import { type BoardApi } from 'gutemberg-chessboard';
+import { SquareKey } from 'gutemberg-chessboard';
 
 export class Engine {
   private stockfish: Worker | undefined;

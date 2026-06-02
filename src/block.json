@@ -9,10 +9,7 @@
   "description": "A native Gutenberg chessboard block for WordPress, powered by Chessground and chess.js.",
   "supports": {
     "html": false,
-    "align": [
-      "wide",
-      "full"
-    ]
+    "align": ["wide", "full"]
   },
   "attributes": {
     "boardConfig": {
@@ -58,6 +55,18 @@
     "viewOnly": {
       "type": "boolean",
       "default": false
+    },
+    "useStockfish": {
+      "type": "boolean",
+      "default": false
+    },
+    "stockfishElo": {
+      "type": "number",
+      "default": 1500
+    },
+    "showEvaluationBar": {
+      "type": "boolean",
+      "default": true
     }
   },
   "textdomain": "gutemberg-chessboard",

@@ -7,6 +7,19 @@ const isWatch = process.argv.includes('--watch');
 // Custom post-build copy logic
 function postBuildCopy() {
   try {
+    if (!existsSync('dist')) {
+      mkdirSync('dist', { recursive: true });
+    }
+    // Copy and rename Stockfish files
+    copyFileSync(
+      resolve(__dirname, '../node_modules/stockfish/bin/stockfish-18-lite-single.js'),
+      'dist/stockfish.js'
+    );
+    copyFileSync(
+      resolve(__dirname, '../node_modules/stockfish/bin/stockfish-18-lite-single.wasm'),
+      'dist/stockfish.wasm'
+    );
+
     if (!existsSync('test/dist')) {
       mkdirSync('test/dist', { recursive: true });
     }
@@ -14,7 +27,9 @@ function postBuildCopy() {
     const filesToCopy = [
       'gutemberg-chessboard.js',
       'gutemberg-chessboard-view.js',
-      'style.css'
+      'style.css',
+      'stockfish.js',
+      'stockfish.wasm'
     ];
     
     filesToCopy.forEach(file => {

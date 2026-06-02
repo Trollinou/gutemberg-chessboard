@@ -1,6 +1,13 @@
 import React from 'react';
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
-import { PanelBody, TextControl, ToggleControl, SelectControl, Button } from '@wordpress/components';
+import {
+  PanelBody,
+  TextControl,
+  ToggleControl,
+  SelectControl,
+  Button,
+  RangeControl,
+} from '@wordpress/components';
 import { useEffect, useRef, useState } from '@wordpress/element';
 import { BoardApi } from './classes/BoardApi';
 import PromotionDialog from './components/PromotionDialog';
@@ -60,14 +67,17 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             } else {
               boardApiRef.current.putPiece(
                 {
-                  type: selectedPieceRef.current.role === 'knight' ? 'n' : selectedPieceRef.current.role[0],
+                  type:
+                    selectedPieceRef.current.role === 'knight'
+                      ? 'n'
+                      : selectedPieceRef.current.role[0],
                   color: selectedPieceRef.current.color === 'white' ? 'w' : 'b',
                 },
                 key
               );
             }
           }
-        }
+        },
       },
       ...attributes.boardConfig,
     };
@@ -93,7 +103,12 @@ export default function Edit({ attributes, setAttributes, clientId }) {
       }
     };
 
-    const boardAPI = new BoardApi(boardRef.current, boardStateProxy, mockProps, emit);
+    const boardAPI = new BoardApi(
+      boardRef.current,
+      boardStateProxy,
+      mockProps,
+      emit
+    );
     boardApiRef.current = boardAPI;
 
     if (attributes.showThreats) {
@@ -146,7 +161,10 @@ export default function Edit({ attributes, setAttributes, clientId }) {
   };
 
   const setFenPart = (partIndex, value) => {
-    const parts = (attributes.fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1').split(' ');
+    const parts = (
+      attributes.fen ||
+      'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+    ).split(' ');
     parts[partIndex] = value;
     const newFen = parts.join(' ');
     lastFenRef.current = newFen;
@@ -179,7 +197,8 @@ export default function Edit({ attributes, setAttributes, clientId }) {
   };
 
   const handleResetBoard = () => {
-    const defaultFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+    const defaultFen =
+      'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
     lastFenRef.current = defaultFen;
     setAttributes({ fen: defaultFen });
     if (boardApiRef.current) {
@@ -199,7 +218,10 @@ export default function Edit({ attributes, setAttributes, clientId }) {
   const roles = ['pawn', 'knight', 'bishop', 'rook', 'queen', 'king'];
 
   const renderPalettePiece = (role, color) => {
-    const isActive = selectedPiece && selectedPiece.role === role && selectedPiece.color === color;
+    const isActive =
+      selectedPiece &&
+      selectedPiece.role === role &&
+      selectedPiece.color === color;
     return (
       <button
         key={`${role}-${color}`}
@@ -214,7 +236,10 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         }}
         title={`Place ${color} ${role}`}
       >
-        <cg-board className="editor-palette-board" style={{ backgroundImage: 'none' }}>
+        <cg-board
+          className="editor-palette-board"
+          style={{ backgroundImage: 'none' }}
+        >
           <piece className={`${role} ${color} piece-inner`} />
         </cg-board>
       </button>
@@ -245,6 +270,9 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     'main-wrap',
     boardState.promotionDialogState.isEnabled ? 'disabledBoard' : '',
     boardState.historyViewerState.isEnabled ? 'viewingHistory' : '',
+    attributes.useStockfish && attributes.showEvaluationBar
+      ? 'has-evaluation-bar'
+      : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -305,18 +333,60 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             checked={attributes.showThreats}
             onChange={(val) => setAttributes({ showThreats: val })}
           />
+          <ToggleControl
+            label="Enable Stockfish"
+            checked={attributes.useStockfish}
+            onChange={(val) => setAttributes({ useStockfish: val })}
+          />
+          {attributes.useStockfish && (
+            <>
+              <RangeControl
+                label="Stockfish Difficulty (ELO)"
+                value={attributes.stockfishElo}
+                onChange={(val) => setAttributes({ stockfishElo: val })}
+                min={1320}
+                max={2800}
+                step={10}
+              />
+              <ToggleControl
+                label="Show Evaluation Bar"
+                checked={attributes.showEvaluationBar}
+                onChange={(val) => setAttributes({ showEvaluationBar: val })}
+              />
+            </>
+          )}
           <PanelBody title="Board Actions" initialOpen={true}>
             <div style={{ display: 'flex', gap: '8px' }}>
-              <Button isDestructive isSecondary onClick={handleClearBoard} style={{ flex: 1 }}>
+              <Button
+                isDestructive
+                isSecondary
+                onClick={handleClearBoard}
+                style={{ flex: 1 }}
+              >
                 Clear Board
               </Button>
-              <Button isSecondary onClick={handleResetBoard} style={{ flex: 1 }}>
+              <Button
+                isSecondary
+                onClick={handleResetBoard}
+                style={{ flex: 1 }}
+              >
                 Reset Board
               </Button>
             </div>
           </PanelBody>
-          <PanelBody title="Piece Palette (Sélectionner puis poser)" initialOpen={true}>
-            <div className="editor-palette-container" style={{ marginTop: 0, padding: 0, border: 'none', background: 'none' }}>
+          <PanelBody
+            title="Piece Palette (Sélectionner puis poser)"
+            initialOpen={true}
+          >
+            <div
+              className="editor-palette-container"
+              style={{
+                marginTop: 0,
+                padding: 0,
+                border: 'none',
+                background: 'none',
+              }}
+            >
               <div className="editor-palette-grid-sidebar">
                 <div className="editor-palette-row-sidebar">
                   {roles.map((role) => renderPalettePiece(role, 'white'))}
@@ -379,9 +449,20 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             />
           )}
           <div ref={boardRef}></div>
+          {attributes.useStockfish && attributes.showEvaluationBar && (
+            <div className="evaluation-bar">
+              <div
+                className="evaluation-bar-fill"
+                style={{
+                  marginTop: attributes.orientation === 'white' ? 'auto' : '0',
+                  marginBottom:
+                    attributes.orientation === 'white' ? '0' : 'auto',
+                }}
+              ></div>
+            </div>
+          )}
         </div>
       </section>
     </div>
   );
 }
-

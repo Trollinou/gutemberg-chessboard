@@ -15,7 +15,9 @@ import { __ } from '@wordpress/i18n';
 import PromotionDialog from './components/PromotionDialog';
 
 export default function Edit({ attributes, setAttributes, clientId }) {
-  const blockProps = useBlockProps();
+  const blockProps = useBlockProps({
+    className: 'gutemberg-chessboard-block',
+  });
   const boardRef = useRef(null);
   const boardApiRef = useRef(null);
   const [selectedPiece, setSelectedPiece] = useState(null); // { role, color } or 'eraser' or null
@@ -217,27 +219,41 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     }
   };
 
-  const gameMode = !attributes.viewOnly
+  const gameMode = attributes.freeMode
+    ? 'freemove'
+    : !attributes.viewOnly
     ? attributes.playerColor === 'both'
       ? '2players'
       : '1player'
     : 'visualize';
 
   const handleGameModeChange = (newMode) => {
-    if (newMode === 'visualize') {
+    if (newMode === 'freemove') {
       setAttributes({
+        freeMode: true,
+        viewOnly: false,
+        playerColor: 'both',
+        useStockfish: false,
+      });
+    } else if (newMode === 'visualize') {
+      setAttributes({
+        freeMode: false,
         viewOnly: true,
         playerColor: 'both',
+        useStockfish: false,
       });
     } else if (newMode === '1player') {
       setAttributes({
+        freeMode: false,
         viewOnly: false,
         playerColor: attributes.orientation,
       });
     } else if (newMode === '2players') {
       setAttributes({
+        freeMode: false,
         viewOnly: false,
         playerColor: 'both',
+        useStockfish: false,
       });
     }
   };
@@ -583,32 +599,46 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 label: __('2 Joueurs', 'gutemberg-chessboard'),
                 value: '2players',
               },
+              {
+                label: __('Mode libre', 'gutemberg-chessboard'),
+                value: 'freemove',
+              },
             ]}
             onChange={handleGameModeChange}
           />
-          <ToggleControl
-            label={__('Activer Stockfish', 'gutemberg-chessboard')}
-            checked={attributes.useStockfish}
-            onChange={(val) => setAttributes({ useStockfish: val })}
-          />
-          {attributes.useStockfish && (
+          {gameMode === '1player' && (
             <>
-              <RangeControl
-                label={__('Niveau de difficulté (ELO)', 'gutemberg-chessboard')}
-                value={attributes.stockfishElo}
-                onChange={(val) => setAttributes({ stockfishElo: val })}
-                min={1320}
-                max={2800}
-                step={10}
-              />
               <ToggleControl
-                label={__(
-                  "Afficher la barre d'évaluation",
-                  'gutemberg-chessboard'
-                )}
-                checked={attributes.showEvaluationBar}
-                onChange={(val) => setAttributes({ showEvaluationBar: val })}
+                label={__('Activer Stockfish', 'gutemberg-chessboard')}
+                checked={attributes.useStockfish}
+                onChange={(val) => setAttributes({ useStockfish: val })}
               />
+              {attributes.useStockfish && (
+                <>
+                  <RangeControl
+                    __next40pxDefaultSize
+                    label={__(
+                      'Niveau de difficulté (ELO)',
+                      'gutemberg-chessboard'
+                    )}
+                    value={attributes.stockfishElo}
+                    onChange={(val) => setAttributes({ stockfishElo: val })}
+                    min={1320}
+                    max={2800}
+                    step={10}
+                  />
+                  <ToggleControl
+                    label={__(
+                      "Afficher la barre d'évaluation",
+                      'gutemberg-chessboard'
+                    )}
+                    checked={attributes.showEvaluationBar}
+                    onChange={(val) =>
+                      setAttributes({ showEvaluationBar: val })
+                    }
+                  />
+                </>
+              )}
             </>
           )}
         </PanelBody>
@@ -641,6 +671,26 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             </div>
           )}
         </div>
+        {!attributes.viewOnly && (
+          <>
+            <div className="chess-status">
+              {__('À vous de jouer', 'gutemberg-chessboard')}
+            </div>
+            {!attributes.freeMode && (
+              <div className="chess-controls">
+                <button type="button" className="control-btn new-game">
+                  {__('Nouvelle partie', 'gutemberg-chessboard')}
+                </button>
+                <button type="button" className="control-btn flip-board">
+                  {__('Retourner', 'gutemberg-chessboard')}
+                </button>
+                <button type="button" className="control-btn undo-move">
+                  {__('Annuler', 'gutemberg-chessboard')}
+                </button>
+              </div>
+            )}
+          </>
+        )}
       </section>
     </div>
   );

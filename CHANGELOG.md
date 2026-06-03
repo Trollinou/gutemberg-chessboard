@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [1.0.4] - 2026-06-03
+
+### Added
+- Intégration du « Mode libre » (Free Mode) pour déplacer librement les pièces des deux camps.
+- Bypass de la validation de tour dans `chess.js` en mode libre via l'inversion dynamique du trait actif dans la FEN.
+- Support des promotions de pion pour les deux couleurs en mode libre via le calcul de la couleur réelle de la pièce déplacée.
+
+### Changed
+- Masquage automatique des boutons de contrôle (« Nouvelle partie », « Retourner », « Annuler ») sous le plateau en mode libre (en modes Édition et Visiteur).
+- Restriction de l'activation du moteur Stockfish uniquement au mode de jeu « 1 Joueur ».
+- Correction de l'avertissement de dépréciation de `RangeControl` dans la console de l'éditeur en spécifiant la prop `__next40pxDefaultSize`.
+
+## [1.0.3] - 2026-06-03
+
+### Changed
+- Amélioration du système de build pour injecter dynamiquement le numéro de version dans les fichiers d'actifs PHP de test, évitant le cache des navigateurs.
+- Standardisation de la taille de police (`14px !important`) sur la zone de statut et les boutons de contrôle pour harmoniser le rendu entre le mode éditeur et le mode visiteur.
+
 ## [1.0.2] - 2026-06-03
 
 ### Changed

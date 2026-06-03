@@ -548,3 +548,173 @@ cg-board.editor-palette-board {
   transition: height 0.3s ease;
   margin-top: auto;
 }
+
+/* Visitor Interface Styles */
+.chess-config-dialog {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(26, 26, 26, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.config-dialog-content {
+  background: #2b2b2b;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 1.5rem;
+  width: 85%;
+  max-width: 320px;
+  color: #fff;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  text-align: center;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif;
+}
+
+.color-selector {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.color-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #555;
+  border-radius: 6px;
+  background: #3a3a3a;
+  color: #ccc;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.color-btn:hover {
+  background: #4a4a4a;
+  color: #fff;
+}
+
+.color-btn.active {
+  background: #007cba;
+  border-color: #007cba;
+  color: #fff;
+  box-shadow: 0 0 8px rgba(0, 124, 186, 0.5);
+}
+
+.difficulty-selector {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.difficulty-selector label {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+  color: #aaa;
+}
+
+.difficulty-selector .elo-value {
+  font-weight: 700;
+  color: #007cba;
+}
+
+.elo-slider {
+  width: 100%;
+  margin: 0;
+  background: #444;
+  height: 6px;
+  border-radius: 3px;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.elo-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #007cba;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.elo-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.config-dialog-content .start-btn {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  background: #007cba;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.config-dialog-content .start-btn:hover {
+  background: #006ba1;
+}
+
+.gutemberg-chessboard-block .chess-status {
+  box-sizing: border-box !important;
+  margin-top: 12px !important;
+  padding: 8px 12px !important;
+  background: #f7f7f7 !important;
+  border: 1px solid #ddd !important;
+  border-radius: 4px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #333 !important;
+  text-align: center !important;
+  display: block !important;
+  width: 100% !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif !important;
+}
+
+.gutemberg-chessboard-block .chess-controls {
+  display: flex !important;
+  gap: 8px !important;
+  margin-top: 10px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.gutemberg-chessboard-block .control-btn {
+  flex: 1 !important;
+  padding: 10px 8px !important;
+  border: 1px solid #ccc !important;
+  border-radius: 4px !important;
+  background: #fff !important;
+  color: #333 !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+  height: auto !important;
+  line-height: normal !important;
+  display: inline-block !important;
+  text-align: center !important;
+}
+
+.gutemberg-chessboard-block .control-btn:hover {
+  background: #f0f0f0 !important;
+  border-color: #bbb !important;
+  color: #333 !important;
+}

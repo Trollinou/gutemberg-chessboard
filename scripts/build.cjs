@@ -38,6 +38,9 @@ function postBuildCopy() {
       }
     });
 
+    const packageJson = JSON.parse(readFileSync(resolve(__dirname, '../package.json'), 'utf8'));
+    const version = packageJson.version || '1.0.2';
+
     const editorAssetContent = `<?php
 return array(
     'dependencies' => array(
@@ -47,7 +50,7 @@ return array(
         'wp-block-editor',
         'wp-i18n',
     ),
-    'version'      => '1.0.0',
+    'version'      => '${version}',
 );
 `;
     writeFileSync('test/dist/gutemberg-chessboard.asset.php', editorAssetContent, 'utf8');
@@ -57,7 +60,7 @@ return array(
     'dependencies' => array(
         'wp-element',
     ),
-    'version'      => '1.0.0',
+    'version'      => '${version}',
 );
 `;
     writeFileSync('test/dist/gutemberg-chessboard-view.asset.php', viewAssetContent, 'utf8');

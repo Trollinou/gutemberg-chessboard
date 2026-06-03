@@ -20,11 +20,14 @@ document.addEventListener('DOMContentLoaded', () => {
       10
     );
 
+    // If using Stockfish, the board starts in viewOnly until "Commencer" is clicked
+    const initialViewOnly = useStockfish ? true : viewOnly;
+
     const boardConfig = {
       fen,
       orientation,
       coordinates,
-      viewOnly,
+      viewOnly: initialViewOnly,
     };
 
     const mockProps = {
@@ -85,25 +88,90 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     let makeStockfishMove = () => {};
+    let currentStockfishColor = null;
+    let currentStockfishElo = stockfishElo;
+    let stockfishWorker = null;
 
-    const emit = (event, val) => {
+    // DOM Elements for Visitor Interface
+    const configDialog = block.querySelector('.chess-config-dialog');
+    const colorBtns = block.querySelectorAll('.color-btn');
+    const eloSlider = block.querySelector('.elo-slider');
+    const eloValueDisplay = block.querySelector('.elo-value');
+    const startBtn = block.querySelector('.start-btn');
+    const statusElement = block.querySelector('.chess-status');
+    const newGameBtn = block.querySelector('.control-btn.new-game');
+    const flipBoardBtn = block.querySelector('.control-btn.flip-board');
+    const undoMoveBtn = block.querySelector('.control-btn.undo-move');
+
+    // Status updater
+    const updateStatus = () => {
+      if (!statusElement) return;
+
+      if (
+        useStockfish &&
+        configDialog &&
+        configDialog.style.display !== 'none'
+      ) {
+        statusElement.textContent =
+          'Choisissez vos options et commencez la partie.';
+        return;
+      }
+
+      if (boardAPI.getIsGameOver()) {
+        if (boardAPI.getIsCheckmate()) {
+          const loserColor = boardAPI.getTurnColor();
+          const winnerText = loserColor === 'white' ? 'Noirs' : 'Blancs';
+          statusElement.textContent = `Échec et mat ! Les ${winnerText} ont gagné. Partie terminée.`;
+        } else if (boardAPI.getIsStalemate()) {
+          statusElement.textContent = 'Pat ! Partie nulle.';
+        } else if (boardAPI.getIsThreefoldRepetition()) {
+          statusElement.textContent = 'Partie nulle - Répétition de position !';
+        } else if (boardAPI.getIsInsufficientMaterial()) {
+          statusElement.textContent = 'Partie nulle - Matériel insuffisant !';
+        } else if (boardAPI.getIsDraw()) {
+          statusElement.textContent =
+            'Partie nulle - Règle des 50 coups ou accord !';
+        }
+        return;
+      }
+
+      if (boardAPI.getIsCheck()) {
+        const inCheckColor =
+          boardAPI.getTurnColor() === 'white' ? 'Blancs' : 'Noirs';
+        statusElement.textContent = `Échec ! Au tour des ${inCheckColor}.`;
+      } else {
+        const turnColor = boardAPI.getTurnColor();
+        if (useStockfish) {
+          if (turnColor === currentStockfishColor) {
+            statusElement.textContent = 'Le moteur réfléchit...';
+          } else {
+            statusElement.textContent = 'À vous de jouer.';
+          }
+        } else {
+          statusElement.textContent = `Au tour des ${
+            turnColor === 'white' ? 'Blancs' : 'Noirs'
+          }.`;
+        }
+      }
+    };
+
+    const emit = (event, _val) => {
       if (event === 'move') {
+        updateStatus();
         setTimeout(() => {
           makeStockfishMove();
         }, 100);
+      } else if (['check', 'checkmate', 'draw', 'stalemate'].includes(event)) {
+        updateStatus();
       }
     };
 
     const boardAPI = new BoardApi(mountElement, state, mockProps, emit);
 
-    const stockfishColor =
-      playerColor === 'white'
-        ? 'black'
-        : playerColor === 'black'
-        ? 'white'
-        : null;
+    const initialFen =
+      fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
-    if (useStockfish && stockfishColor) {
+    if (useStockfish) {
       const viewScript = document.querySelector(
         'script[src*="gutemberg-chessboard-view.js"]'
       );
@@ -118,103 +186,208 @@ document.addEventListener('DOMContentLoaded', () => {
           '/wp-content/plugins/gutemberg-chessboard/dist/stockfish.js';
       }
 
-      const stockfishWorker = new Worker(workerUrl);
-      const initialFen =
-        fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+      try {
+        stockfishWorker = new Worker(workerUrl);
 
-      // Configure Stockfish
-      stockfishWorker.postMessage('uci');
-      stockfishWorker.postMessage('ucinewgame');
-      stockfishWorker.postMessage(
-        'setoption name UCI_LimitStrength value true'
-      );
-      stockfishWorker.postMessage(
-        `setoption name UCI_Elo value ${stockfishElo}`
-      );
-      stockfishWorker.postMessage('isready');
+        // Configure Stockfish
+        stockfishWorker.postMessage('uci');
+        stockfishWorker.postMessage('ucinewgame');
+        stockfishWorker.postMessage(
+          'setoption name UCI_LimitStrength value true'
+        );
+        stockfishWorker.postMessage(
+          `setoption name UCI_Elo value ${currentStockfishElo}`
+        );
+        stockfishWorker.postMessage('isready');
 
-      makeStockfishMove = () => {
-        if (boardAPI.getIsGameOver()) return;
-        const turnColor = boardAPI.getTurnColor(); // 'white' or 'black'
-        if (turnColor === stockfishColor) {
-          const history = boardAPI.getHistory(true) || [];
-          const movesStr = history
-            .map((m) => m.from + m.to + (m.promotion ? m.promotion : ''))
-            .join(' ');
-          const positionCommand = movesStr
-            ? `position fen ${initialFen} moves ${movesStr}`
-            : `position fen ${initialFen}`;
+        makeStockfishMove = () => {
+          if (boardAPI.getIsGameOver()) return;
+          const turnColor = boardAPI.getTurnColor(); // 'white' or 'black'
+          if (turnColor === currentStockfishColor) {
+            const history = boardAPI.getHistory(true) || [];
+            const movesStr = history
+              .map((m) => m.from + m.to + (m.promotion ? m.promotion : ''))
+              .join(' ');
+            const positionCommand = movesStr
+              ? `position fen ${initialFen} moves ${movesStr}`
+              : `position fen ${initialFen}`;
 
-          stockfishWorker.postMessage(positionCommand);
-          stockfishWorker.postMessage('go movetime 1500');
-        }
-      };
+            stockfishWorker.postMessage(positionCommand);
+            stockfishWorker.postMessage('go movetime 1500');
+          }
+        };
 
-      const updateEvaluationBar = (scoreType, scoreValue) => {
-        const barFill = block.querySelector('.evaluation-bar-fill');
-        if (!barFill) return;
+        const updateEvaluationBar = (scoreType, scoreValue) => {
+          const barFill = block.querySelector('.evaluation-bar-fill');
+          if (!barFill) return;
 
-        let scoreFromWhite = 0;
-        if (scoreType === 'cp') {
-          scoreFromWhite =
-            stockfishColor === 'white' ? scoreValue : -scoreValue;
-        } else if (scoreType === 'mate') {
-          const isWhiteAdvantage =
-            (stockfishColor === 'white' && scoreValue > 0) ||
-            (stockfishColor === 'black' && scoreValue < 0);
-          scoreFromWhite = isWhiteAdvantage ? 1000 : -1000;
-        }
+          let scoreFromWhite = 0;
+          if (scoreType === 'cp') {
+            scoreFromWhite =
+              currentStockfishColor === 'white' ? -scoreValue : scoreValue;
+          } else if (scoreType === 'mate') {
+            const isWhiteAdvantage =
+              (currentStockfishColor === 'white' && scoreValue < 0) ||
+              (currentStockfishColor === 'black' && scoreValue > 0);
+            scoreFromWhite = isWhiteAdvantage ? 1000 : -1000;
+          }
 
-        const clampedScore = Math.max(-1000, Math.min(1000, scoreFromWhite));
-        const percentageWhite = 50 + (clampedScore / 1000) * 50;
-        const currentOrientation =
-          block.getAttribute('data-orientation') || 'white';
+          const clampedScore = Math.max(-1000, Math.min(1000, scoreFromWhite));
+          const percentageWhite = 50 + (clampedScore / 1000) * 50;
+          const currentOrientation =
+            block.getAttribute('data-orientation') || 'white';
 
-        if (currentOrientation === 'white') {
-          barFill.style.height = `${percentageWhite}%`;
-          barFill.style.marginTop = 'auto';
-          barFill.style.marginBottom = '0';
-        } else {
-          barFill.style.height = `${percentageWhite}%`;
-          barFill.style.marginTop = '0';
-          barFill.style.marginBottom = 'auto';
-        }
-      };
+          if (currentOrientation === 'white') {
+            barFill.style.height = `${percentageWhite}%`;
+            barFill.style.marginTop = 'auto';
+            barFill.style.marginBottom = '0';
+          } else {
+            barFill.style.height = `${percentageWhite}%`;
+            barFill.style.marginTop = '0';
+            barFill.style.marginBottom = 'auto';
+          }
+        };
 
-      stockfishWorker.onmessage = (event) => {
-        const line = event.data;
+        stockfishWorker.onmessage = (event) => {
+          const line = event.data;
 
-        // Parse evaluation information
-        if (line.startsWith('info ')) {
-          const parts = line.split(' ');
-          const scoreIndex = parts.indexOf('score');
-          if (scoreIndex !== -1 && scoreIndex + 2 < parts.length) {
-            const scoreType = parts[scoreIndex + 1]; // 'cp' or 'mate'
-            const scoreValue = parseInt(parts[scoreIndex + 2], 10);
-            if (scoreType === 'cp') {
-              updateEvaluationBar('cp', scoreValue);
-            } else if (scoreType === 'mate') {
-              updateEvaluationBar('mate', scoreValue);
+          // Parse evaluation information
+          if (line.startsWith('info ')) {
+            const parts = line.split(' ');
+            const scoreIndex = parts.indexOf('score');
+            if (scoreIndex !== -1 && scoreIndex + 2 < parts.length) {
+              const scoreType = parts[scoreIndex + 1]; // 'cp' or 'mate'
+              const scoreValue = parseInt(parts[scoreIndex + 2], 10);
+              if (scoreType === 'cp') {
+                updateEvaluationBar('cp', scoreValue);
+              } else if (scoreType === 'mate') {
+                updateEvaluationBar('mate', scoreValue);
+              }
             }
           }
-        }
 
-        if (line.startsWith('bestmove')) {
-          const parts = line.split(' ');
-          const bestMove = parts[1];
-          if (bestMove && bestMove !== '(none)') {
-            const from = bestMove.slice(0, 2);
-            const to = bestMove.slice(2, 4);
-            const promotion =
-              bestMove.length > 4 ? bestMove.charAt(4) : undefined;
-            boardAPI.move({ from, to, promotion });
+          if (line.startsWith('bestmove')) {
+            const parts = line.split(' ');
+            const bestMove = parts[1];
+            if (bestMove && bestMove !== '(none)') {
+              const from = bestMove.slice(0, 2);
+              const to = bestMove.slice(2, 4);
+              const promotion =
+                bestMove.length > 4 ? bestMove.charAt(4) : undefined;
+              boardAPI.move({ from, to, promotion });
+            }
           }
-        }
-      };
-
-      // Check for first move
-      makeStockfishMove();
+        };
+      } catch (err) {
+        console.error('Stockfish Worker failed to load:', err);
+      }
     }
+
+    // Set up Visitor interface event listeners
+    if (useStockfish && configDialog) {
+      // Color selector click handlers
+      colorBtns.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          colorBtns.forEach((b) => b.classList.remove('active'));
+          btn.classList.add('active');
+        });
+      });
+
+      // Elo slider dynamic text change
+      if (eloSlider && eloValueDisplay) {
+        eloSlider.addEventListener('input', (e) => {
+          eloValueDisplay.textContent = e.target.value;
+        });
+      }
+
+      // Start game click handler
+      if (startBtn) {
+        startBtn.addEventListener('click', () => {
+          const activeColorBtn = block.querySelector('.color-btn.active');
+          const chosenColor = activeColorBtn
+            ? activeColorBtn.getAttribute('data-color')
+            : 'white';
+          const playerChosenColor =
+            chosenColor === 'random'
+              ? Math.random() < 0.5
+                ? 'white'
+                : 'black'
+              : chosenColor;
+
+          currentStockfishColor =
+            playerChosenColor === 'white' ? 'black' : 'white';
+
+          if (eloSlider) {
+            currentStockfishElo = parseInt(eloSlider.value, 10);
+          }
+
+          // Hide configuration dialog
+          configDialog.style.display = 'none';
+
+          // Reset board position and orientation, and enable interactivity
+          boardAPI.resetBoard();
+          boardAPI.setConfig({
+            viewOnly: false,
+            orientation: playerChosenColor,
+          });
+          mockProps.playerColor = playerChosenColor;
+
+          // Configure Stockfish level strength and new game ELO
+          if (stockfishWorker) {
+            stockfishWorker.postMessage('ucinewgame');
+            stockfishWorker.postMessage(
+              'setoption name UCI_LimitStrength value true'
+            );
+            stockfishWorker.postMessage(
+              `setoption name UCI_Elo value ${currentStockfishElo}`
+            );
+            stockfishWorker.postMessage('isready');
+          }
+
+          updateStatus();
+          // Ask Stockfish to move if Stockfish plays White
+          makeStockfishMove();
+        });
+      }
+    }
+
+    // Control buttons event listeners
+    if (newGameBtn) {
+      newGameBtn.addEventListener('click', () => {
+        boardAPI.resetBoard();
+        if (useStockfish && configDialog) {
+          boardAPI.setConfig({ viewOnly: true });
+          configDialog.style.display = 'flex';
+        }
+        updateStatus();
+      });
+    }
+
+    if (flipBoardBtn) {
+      flipBoardBtn.addEventListener('click', () => {
+        boardAPI.toggleOrientation();
+      });
+    }
+
+    if (undoMoveBtn) {
+      undoMoveBtn.addEventListener('click', () => {
+        if (useStockfish) {
+          const turnColor = boardAPI.getTurnColor();
+          if (turnColor === currentStockfishColor) {
+            boardAPI.undoLastMove();
+          } else {
+            boardAPI.undoLastMove();
+            boardAPI.undoLastMove();
+          }
+        } else {
+          boardAPI.undoLastMove();
+        }
+        updateStatus();
+      });
+    }
+
+    // Initial status check
+    updateStatus();
 
     if (showThreats) {
       boardAPI.drawMoves();

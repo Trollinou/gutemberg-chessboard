@@ -15,7 +15,9 @@ import { __ } from '@wordpress/i18n';
 import PromotionDialog from './components/PromotionDialog';
 
 export default function Edit({ attributes, setAttributes, clientId }) {
-  const blockProps = useBlockProps();
+  const blockProps = useBlockProps({
+    className: 'gutemberg-chessboard-block',
+  });
   const boardRef = useRef(null);
   const boardApiRef = useRef(null);
   const [selectedPiece, setSelectedPiece] = useState(null); // { role, color } or 'eraser' or null
@@ -641,6 +643,24 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             </div>
           )}
         </div>
+        {!attributes.viewOnly && (
+          <>
+            <div className="chess-status">
+              {__('À vous de jouer', 'gutemberg-chessboard')}
+            </div>
+            <div className="chess-controls">
+              <button type="button" className="control-btn new-game">
+                {__('Nouvelle partie', 'gutemberg-chessboard')}
+              </button>
+              <button type="button" className="control-btn flip-board">
+                {__('Retourner', 'gutemberg-chessboard')}
+              </button>
+              <button type="button" className="control-btn undo-move">
+                {__('Annuler', 'gutemberg-chessboard')}
+              </button>
+            </div>
+          </>
+        )}
       </section>
     </div>
   );

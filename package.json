@@ -1,6 +1,6 @@
 {
   "name": "gutemberg-chessboard",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "WordPress Gutenberg block rewritten from the original Vue 3 vue3-chessboard component (https://github.com/qwerty084/vue3-chessboard)",
   "keywords": [
     "gutenberg",

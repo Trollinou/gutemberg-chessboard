@@ -20,6 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
       10
     );
 
+    const freeMode = block.getAttribute('data-free-mode') === 'true';
+
     // If using Stockfish, the board starts in viewOnly until "Commencer" is clicked
     const initialViewOnly = useStockfish ? true : viewOnly;
 
@@ -34,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
       boardConfig,
       playerColor,
       reactiveConfig: false,
+      freeMode,
     };
 
     const promotionPieces = [

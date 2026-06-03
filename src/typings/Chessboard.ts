@@ -63,6 +63,7 @@ export interface Props {
   boardConfig?: BoardConfig;
   playerColor?: MoveableColor;
   reactiveConfig?: boolean;
+  freeMode?: boolean;
 }
 
 export interface BoardState {

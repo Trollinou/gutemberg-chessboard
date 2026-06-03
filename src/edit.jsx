@@ -219,25 +219,36 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     }
   };
 
-  const gameMode = !attributes.viewOnly
+  const gameMode = attributes.freeMode
+    ? 'freemove'
+    : !attributes.viewOnly
     ? attributes.playerColor === 'both'
       ? '2players'
       : '1player'
     : 'visualize';
 
   const handleGameModeChange = (newMode) => {
-    if (newMode === 'visualize') {
+    if (newMode === 'freemove') {
       setAttributes({
+        freeMode: true,
+        viewOnly: false,
+        playerColor: 'both',
+      });
+    } else if (newMode === 'visualize') {
+      setAttributes({
+        freeMode: false,
         viewOnly: true,
         playerColor: 'both',
       });
     } else if (newMode === '1player') {
       setAttributes({
+        freeMode: false,
         viewOnly: false,
         playerColor: attributes.orientation,
       });
     } else if (newMode === '2players') {
       setAttributes({
+        freeMode: false,
         viewOnly: false,
         playerColor: 'both',
       });
@@ -584,6 +595,10 @@ export default function Edit({ attributes, setAttributes, clientId }) {
               {
                 label: __('2 Joueurs', 'gutemberg-chessboard'),
                 value: '2players',
+              },
+              {
+                label: __('Mode libre', 'gutemberg-chessboard'),
+                value: 'freemove',
               },
             ]}
             onChange={handleGameModeChange}

@@ -67,6 +67,10 @@
     "showEvaluationBar": {
       "type": "boolean",
       "default": false
+    },
+    "freeMode": {
+      "type": "boolean",
+      "default": false
     }
   },
   "textdomain": "gutemberg-chessboard",

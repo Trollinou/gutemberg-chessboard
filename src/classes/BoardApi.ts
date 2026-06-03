@@ -81,9 +81,15 @@ export class BoardApi {
         this.board.state.movable.color = 'both';
         this.board.state.movable.dests = new Map();
       } else {
-        this.board.state.movable.color =
-          this.props.playerColor || this.board.state.turnColor;
-        this.board.state.movable.dests = possibleMoves(this.game);
+        // En mode libre, on autorise le déplacement des deux couleurs
+        this.board.state.movable.color = this.props.freeMode
+          ? 'both'
+          : this.props.playerColor || this.board.state.turnColor;
+
+        // En mode libre, on calcule les coups légaux pour les deux camps
+        this.board.state.movable.dests = this.props.freeMode
+          ? this.getPossibleMovesForBothColors()
+          : possibleMoves(this.game);
       }
 
       this.displayInCheck(this.game.inCheck(), this.board.state.turnColor);
@@ -94,6 +100,46 @@ export class BoardApi {
     }
 
     this.emitEvents();
+  }
+
+  /**
+   * Échange le trait actif (w/b) dans une chaîne FEN.
+   * @private
+   */
+  private swapFenTurn(fen: string): string {
+    const parts = fen.split(' ');
+    parts[1] = parts[1] === 'w' ? 'b' : 'w';
+    return parts.join(' ');
+  }
+
+  /**
+   * Calcule les destinations autorisées (dests) pour les deux couleurs en mode libre.
+   * @private
+   */
+  private getPossibleMovesForBothColors(): Map<Key, Key[]> {
+    // Obtenir d'abord les coups possibles pour le camp dont c'est actuellement le tour
+    const dests = possibleMoves(this.game);
+
+    // Sauvegarder la position FEN originale pour pouvoir la restaurer
+    const originalFen = this.game.fen();
+    // Inverser temporairement le trait actif dans chess.js
+    const swappedFen = this.swapFenTurn(originalFen);
+
+    try {
+      this.game.load(swappedFen);
+      const otherDests = possibleMoves(this.game);
+      // Fusionner les coups légaux calculés pour la couleur adverse
+      for (const [key, value] of otherDests.entries()) {
+        dests.set(key, value);
+      }
+    } catch (e) {
+      // Ignorer les erreurs de validation temporaires
+    } finally {
+      // Restaurer le tour de jeu original
+      this.game.load(originalFen);
+    }
+
+    return dests;
   }
 
   /**
@@ -201,11 +247,18 @@ export class BoardApi {
     _: MoveMetadata
   ): Promise<void> {
     let selectedPromotion: Promotion | undefined = undefined;
-    if (isPromotion(dest, this.game.get(orig as Square))) {
+    const piece = this.game.get(orig as Square);
+    if (isPromotion(dest, piece)) {
+      // Déterminer la couleur de la pièce jouée pour afficher les bonnes pièces dans la boîte de promotion
+      const pieceColor = piece
+        ? piece.color === 'w'
+          ? 'white'
+          : 'black'
+        : this.getTurnColor();
       selectedPromotion = await new Promise((resolve) => {
         this.boardState.promotionDialogState = {
           isEnabled: true,
-          color: this.getTurnColor(),
+          color: pieceColor,
           callback: resolve,
         };
       });
@@ -388,10 +441,30 @@ export class BoardApi {
    */
   move(move: string | Move): boolean {
     let moveEvent: MoveEvent;
+    let needsBypass = false;
+    let originalFen = '';
+
+    // Si le Mode Libre est activé et que le coup est spécifié sous forme d'objet { from, to } :
+    // On vérifie si la pièce déplacée est d'une couleur différente du trait actuel dans chess.js.
+    // Si c'est le cas, on doit modifier temporairement le trait actif pour que le coup soit validé.
+    if (this.props.freeMode && typeof move === 'object') {
+      const piece = this.game.get(move.from as Square);
+      if (piece && piece.color !== this.game.turn()) {
+        needsBypass = true;
+        originalFen = this.game.fen();
+        // Échange temporaire du tour de jeu dans l'état FEN de chess.js
+        this.game.load(this.swapFenTurn(originalFen));
+      }
+    }
 
     try {
       moveEvent = this.game.move(move);
     } catch {
+      // Si le coup a échoué dans chess.js, et qu'on avait modifié temporairement le trait,
+      // on restaure impérativement la position FEN d'origine.
+      if (needsBypass) {
+        this.game.load(originalFen);
+      }
       if (typeof move === 'object' && this.board.state.movable.free) {
         this.board.move(move.from, move.to);
         this.updateGameState({ updateFen: false });

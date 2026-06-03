@@ -16,6 +16,7 @@ export default function Save({ attributes }) {
     'data-use-stockfish': attributes.useStockfish,
     'data-stockfish-elo': attributes.stockfishElo,
     'data-show-evaluation-bar': attributes.showEvaluationBar,
+    'data-free-mode': attributes.freeMode,
   });
 
   return (
@@ -87,17 +88,19 @@ export default function Save({ attributes }) {
         {!attributes.viewOnly && (
           <>
             <div className="chess-status">À vous de jouer</div>
-            <div className="chess-controls">
-              <button type="button" className="control-btn new-game">
-                Nouvelle partie
-              </button>
-              <button type="button" className="control-btn flip-board">
-                Retourner
-              </button>
-              <button type="button" className="control-btn undo-move">
-                Annuler
-              </button>
-            </div>
+            {!attributes.freeMode && (
+              <div className="chess-controls">
+                <button type="button" className="control-btn new-game">
+                  Nouvelle partie
+                </button>
+                <button type="button" className="control-btn flip-board">
+                  Retourner
+                </button>
+                <button type="button" className="control-btn undo-move">
+                  Annuler
+                </button>
+              </div>
+            )}
           </>
         )}
       </section>

@@ -233,12 +233,14 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         freeMode: true,
         viewOnly: false,
         playerColor: 'both',
+        useStockfish: false,
       });
     } else if (newMode === 'visualize') {
       setAttributes({
         freeMode: false,
         viewOnly: true,
         playerColor: 'both',
+        useStockfish: false,
       });
     } else if (newMode === '1player') {
       setAttributes({
@@ -251,6 +253,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
         freeMode: false,
         viewOnly: false,
         playerColor: 'both',
+        useStockfish: false,
       });
     }
   };
@@ -603,30 +606,39 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             ]}
             onChange={handleGameModeChange}
           />
-          <ToggleControl
-            label={__('Activer Stockfish', 'gutemberg-chessboard')}
-            checked={attributes.useStockfish}
-            onChange={(val) => setAttributes({ useStockfish: val })}
-          />
-          {attributes.useStockfish && (
+          {gameMode === '1player' && (
             <>
-              <RangeControl
-                __next40pxDefaultSize
-                label={__('Niveau de difficulté (ELO)', 'gutemberg-chessboard')}
-                value={attributes.stockfishElo}
-                onChange={(val) => setAttributes({ stockfishElo: val })}
-                min={1320}
-                max={2800}
-                step={10}
-              />
               <ToggleControl
-                label={__(
-                  "Afficher la barre d'évaluation",
-                  'gutemberg-chessboard'
-                )}
-                checked={attributes.showEvaluationBar}
-                onChange={(val) => setAttributes({ showEvaluationBar: val })}
+                label={__('Activer Stockfish', 'gutemberg-chessboard')}
+                checked={attributes.useStockfish}
+                onChange={(val) => setAttributes({ useStockfish: val })}
               />
+              {attributes.useStockfish && (
+                <>
+                  <RangeControl
+                    __next40pxDefaultSize
+                    label={__(
+                      'Niveau de difficulté (ELO)',
+                      'gutemberg-chessboard'
+                    )}
+                    value={attributes.stockfishElo}
+                    onChange={(val) => setAttributes({ stockfishElo: val })}
+                    min={1320}
+                    max={2800}
+                    step={10}
+                  />
+                  <ToggleControl
+                    label={__(
+                      "Afficher la barre d'évaluation",
+                      'gutemberg-chessboard'
+                    )}
+                    checked={attributes.showEvaluationBar}
+                    onChange={(val) =>
+                      setAttributes({ showEvaluationBar: val })
+                    }
+                  />
+                </>
+              )}
             </>
           )}
         </PanelBody>

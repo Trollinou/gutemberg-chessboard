@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [1.0.2] - 2026-06-03
+
+### Changed
+- Réorganisation de la barre latérale des réglages de l'éditeur Gutenberg en français sous 3 sections : Configuration, Style de l'échiquier, Mode de jeu.
+- Déplacement du champ "Position FEN" au tout début de l'inspecteur de bloc (en dehors de tout panneau pliable) pour une visibilité permanente, et fermeture par défaut de l'onglet Configuration.
+- Remplacement des boutons glissants des droits de roque par un tableau de cases à cocher (`CheckboxControl`) parfaitement alignées.
+- Valeur par défaut de `viewOnly` passée à `true` et `showEvaluationBar` passée à `false`.
+- Refonte des modes de jeu au frontend avec les options : Visualiser, 1 Joueur (couleur synchrone avec l'orientation) et 2 Joueurs.
+
+### Added
+- Implémentation d'une boîte de dialogue de promotion de pions dynamique en pur JavaScript pour le frontend (`view.jsx`) dans les modes 1 Joueur et 2 Joueurs.
+
 ## [1.0.1] - 2026-06-01
 
 ### Added

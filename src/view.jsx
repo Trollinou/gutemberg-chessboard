@@ -33,10 +33,54 @@ document.addEventListener('DOMContentLoaded', () => {
       reactiveConfig: false,
     };
 
+    const promotionPieces = [
+      { name: 'Queen', data: 'q' },
+      { name: 'Knight', data: 'n' },
+      { name: 'Rook', data: 'r' },
+      { name: 'Bishop', data: 'b' },
+    ];
+
     // Minimal state for frontend interaction
     const state = {
       showThreats,
-      promotionDialogState: { isEnabled: false },
+      _promotionDialogState: { isEnabled: false },
+      get promotionDialogState() {
+        return this._promotionDialogState;
+      },
+      set promotionDialogState(val) {
+        this._promotionDialogState = val;
+        if (val && val.isEnabled) {
+          const mainBoard = block.querySelector('.main-board');
+          if (!mainBoard) return;
+
+          const existingDialog = mainBoard.querySelector('.promotion-dialog');
+          if (existingDialog) existingDialog.remove();
+
+          const dialog = document.createElement('dialog');
+          dialog.className = 'promotion-dialog';
+          dialog.setAttribute('open', '');
+
+          promotionPieces.forEach((piece) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = `${piece.name.toLowerCase()} ${val.color}`;
+            btn.setAttribute('aria-label', piece.name);
+
+            const selectPiece = (e) => {
+              e.preventDefault();
+              val.callback(piece.data);
+              dialog.remove();
+              state._promotionDialogState = { isEnabled: false };
+            };
+
+            btn.addEventListener('click', selectPiece);
+            btn.addEventListener('touchstart', selectPiece);
+            dialog.appendChild(btn);
+          });
+
+          mainBoard.appendChild(dialog);
+        }
+      },
       historyViewerState: { isEnabled: false },
     };
 

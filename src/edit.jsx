@@ -7,9 +7,11 @@ import {
   SelectControl,
   Button,
   RangeControl,
+  CheckboxControl,
 } from '@wordpress/components';
 import { useEffect, useRef, useState } from '@wordpress/element';
 import { BoardApi } from './classes/BoardApi';
+import { __ } from '@wordpress/i18n';
 import PromotionDialog from './components/PromotionDialog';
 
 export default function Edit({ attributes, setAttributes, clientId }) {
@@ -215,6 +217,39 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     }
   };
 
+  const gameMode = !attributes.viewOnly
+    ? attributes.playerColor === 'both'
+      ? '2players'
+      : '1player'
+    : 'visualize';
+
+  const handleGameModeChange = (newMode) => {
+    if (newMode === 'visualize') {
+      setAttributes({
+        viewOnly: true,
+        playerColor: 'both',
+      });
+    } else if (newMode === '1player') {
+      setAttributes({
+        viewOnly: false,
+        playerColor: attributes.orientation,
+      });
+    } else if (newMode === '2players') {
+      setAttributes({
+        viewOnly: false,
+        playerColor: 'both',
+      });
+    }
+  };
+
+  const handleOrientationChange = (newOrientation) => {
+    const updates = { orientation: newOrientation };
+    if (gameMode === '1player') {
+      updates.playerColor = newOrientation;
+    }
+    setAttributes(updates);
+  };
+
   const roles = ['pawn', 'knight', 'bishop', 'rook', 'queen', 'king'];
 
   const renderPalettePiece = (role, color) => {
@@ -287,75 +322,40 @@ export default function Edit({ attributes, setAttributes, clientId }) {
       }}
     >
       <InspectorControls>
-        <PanelBody title="Chessboard Settings" initialOpen={true}>
+        <div style={{ padding: '8px 16px 16px 16px' }}>
+          <span
+            style={{
+              display: 'block',
+              marginBottom: '8px',
+              fontWeight: '500',
+            }}
+          >
+            {__('Position FEN', 'gutemberg-chessboard')}
+          </span>
           <TextControl
             __next40pxDefaultSize
-            label="FEN Position"
             value={attributes.fen}
             onChange={(val) => {
               lastFenRef.current = val;
               setAttributes({ fen: val });
             }}
           />
-          <SelectControl
-            __next40pxDefaultSize
-            label="Orientation"
-            value={attributes.orientation}
-            options={[
-              { label: 'White', value: 'white' },
-              { label: 'Black', value: 'black' },
-            ]}
-            onChange={(val) => setAttributes({ orientation: val })}
-          />
-          <ToggleControl
-            label="Show Coordinates"
-            checked={attributes.coordinates}
-            onChange={(val) => setAttributes({ coordinates: val })}
-          />
-          <ToggleControl
-            label="View Only (Read-Only on Frontend)"
-            checked={attributes.viewOnly}
-            onChange={(val) => setAttributes({ viewOnly: val })}
-          />
-          <SelectControl
-            __next40pxDefaultSize
-            label="Player Color"
-            value={attributes.playerColor}
-            options={[
-              { label: 'Both', value: 'both' },
-              { label: 'White', value: 'white' },
-              { label: 'Black', value: 'black' },
-            ]}
-            onChange={(val) => setAttributes({ playerColor: val })}
-          />
-          <ToggleControl
-            label="Show Threats"
-            checked={attributes.showThreats}
-            onChange={(val) => setAttributes({ showThreats: val })}
-          />
-          <ToggleControl
-            label="Enable Stockfish"
-            checked={attributes.useStockfish}
-            onChange={(val) => setAttributes({ useStockfish: val })}
-          />
-          {attributes.useStockfish && (
-            <>
-              <RangeControl
-                label="Stockfish Difficulty (ELO)"
-                value={attributes.stockfishElo}
-                onChange={(val) => setAttributes({ stockfishElo: val })}
-                min={1320}
-                max={2800}
-                step={10}
-              />
-              <ToggleControl
-                label="Show Evaluation Bar"
-                checked={attributes.showEvaluationBar}
-                onChange={(val) => setAttributes({ showEvaluationBar: val })}
-              />
-            </>
-          )}
-          <PanelBody title="Board Actions" initialOpen={true}>
+        </div>
+
+        <PanelBody
+          title={__('Configuration', 'gutemberg-chessboard')}
+          initialOpen={false}
+        >
+          <div style={{ marginBottom: '16px' }}>
+            <span
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                fontWeight: '500',
+              }}
+            >
+              {__('Charger une position', 'gutemberg-chessboard')}
+            </span>
             <div style={{ display: 'flex', gap: '8px' }}>
               <Button
                 isDestructive
@@ -363,21 +363,28 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 onClick={handleClearBoard}
                 style={{ flex: 1 }}
               >
-                Clear Board
+                {__('Échiquier vide', 'gutemberg-chessboard')}
               </Button>
               <Button
                 isSecondary
                 onClick={handleResetBoard}
                 style={{ flex: 1 }}
               >
-                Reset Board
+                {__('Position initiale', 'gutemberg-chessboard')}
               </Button>
             </div>
-          </PanelBody>
-          <PanelBody
-            title="Piece Palette (Sélectionner puis poser)"
-            initialOpen={true}
-          >
+          </div>
+
+          <div style={{ marginBottom: '16px' }}>
+            <span
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                fontWeight: '500',
+              }}
+            >
+              {__('Palette de pièces', 'gutemberg-chessboard')}
+            </span>
             <div
               className="editor-palette-container"
               style={{
@@ -399,39 +406,211 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                 </div>
               </div>
             </div>
-          </PanelBody>
+          </div>
+
+          <div style={{ marginBottom: '16px' }}>
+            <span
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                fontWeight: '500',
+              }}
+            >
+              {__('Traits aux', 'gutemberg-chessboard')}
+            </span>
+            <SelectControl
+              __next40pxDefaultSize
+              value={activeColor}
+              options={[
+                { label: __('Blanc', 'gutemberg-chessboard'), value: 'w' },
+                { label: __('Noir', 'gutemberg-chessboard'), value: 'b' },
+              ]}
+              onChange={(val) => setFenPart(1, val)}
+            />
+          </div>
+
+          <div style={{ marginBottom: '8px' }}>
+            <span
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                fontWeight: '500',
+              }}
+            >
+              {__('Roques', 'gutemberg-chessboard')}
+            </span>
+            <table
+              style={{
+                width: '100%',
+                borderCollapse: 'collapse',
+                border: 'none',
+                marginTop: '8px',
+              }}
+            >
+              <tbody>
+                <tr>
+                  <td
+                    style={{
+                      width: '70px',
+                      padding: '2px 0',
+                      verticalAlign: 'middle',
+                      border: 'none',
+                    }}
+                  >
+                    <span style={{ fontWeight: '500' }}>
+                      {__('Blanc :', 'gutemberg-chessboard')}
+                    </span>
+                  </td>
+                  <td
+                    style={{
+                      width: '90px',
+                      padding: '2px 0',
+                      verticalAlign: 'middle',
+                      border: 'none',
+                    }}
+                  >
+                    <CheckboxControl
+                      label="O-O"
+                      checked={castling.includes('K')}
+                      onChange={(val) => updateCastling('K', val)}
+                    />
+                  </td>
+                  <td
+                    style={{
+                      padding: '2px 0',
+                      verticalAlign: 'middle',
+                      border: 'none',
+                    }}
+                  >
+                    <CheckboxControl
+                      label="O-O-O"
+                      checked={castling.includes('Q')}
+                      onChange={(val) => updateCastling('Q', val)}
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <td
+                    style={{
+                      padding: '2px 0',
+                      verticalAlign: 'middle',
+                      border: 'none',
+                    }}
+                  >
+                    <span style={{ fontWeight: '500' }}>
+                      {__('Noir :', 'gutemberg-chessboard')}
+                    </span>
+                  </td>
+                  <td
+                    style={{
+                      padding: '2px 0',
+                      verticalAlign: 'middle',
+                      border: 'none',
+                    }}
+                  >
+                    <CheckboxControl
+                      label="O-O"
+                      checked={castling.includes('k')}
+                      onChange={(val) => updateCastling('k', val)}
+                    />
+                  </td>
+                  <td
+                    style={{
+                      padding: '2px 0',
+                      verticalAlign: 'middle',
+                      border: 'none',
+                    }}
+                  >
+                    <CheckboxControl
+                      label="O-O-O"
+                      checked={castling.includes('q')}
+                      onChange={(val) => updateCastling('q', val)}
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </PanelBody>
+
+        <PanelBody
+          title={__("Style de l'échiquier", 'gutemberg-chessboard')}
+          initialOpen={true}
+        >
+          <ToggleControl
+            label={__('Afficher les coordonnées', 'gutemberg-chessboard')}
+            checked={attributes.coordinates}
+            onChange={(val) => setAttributes({ coordinates: val })}
+          />
+          <ToggleControl
+            label={__('Afficher les menaces', 'gutemberg-chessboard')}
+            checked={attributes.showThreats}
+            onChange={(val) => setAttributes({ showThreats: val })}
+          />
+        </PanelBody>
+
+        <PanelBody
+          title={__('Mode de jeu', 'gutemberg-chessboard')}
+          initialOpen={true}
+        >
           <SelectControl
             __next40pxDefaultSize
-            label="Active Turn (Trait aux)"
-            value={activeColor}
+            label={__('Orientation', 'gutemberg-chessboard')}
+            value={attributes.orientation}
             options={[
-              { label: 'White', value: 'w' },
-              { label: 'Black', value: 'b' },
+              { label: __('Blanc', 'gutemberg-chessboard'), value: 'white' },
+              { label: __('Noir', 'gutemberg-chessboard'), value: 'black' },
             ]}
-            onChange={(val) => setFenPart(1, val)}
+            onChange={handleOrientationChange}
           />
-          <PanelBody title="Castling Rights (Roques)" initialOpen={false}>
-            <ToggleControl
-              label="White King side (O-O)"
-              checked={castling.includes('K')}
-              onChange={(val) => updateCastling('K', val)}
-            />
-            <ToggleControl
-              label="White Queen side (O-O-O)"
-              checked={castling.includes('Q')}
-              onChange={(val) => updateCastling('Q', val)}
-            />
-            <ToggleControl
-              label="Black King side (o-o)"
-              checked={castling.includes('k')}
-              onChange={(val) => updateCastling('k', val)}
-            />
-            <ToggleControl
-              label="Black Queen side (o-o-o)"
-              checked={castling.includes('q')}
-              onChange={(val) => updateCastling('q', val)}
-            />
-          </PanelBody>
+          <SelectControl
+            __next40pxDefaultSize
+            label={__(
+              'Mode de jeu (Mode visualisation)',
+              'gutemberg-chessboard'
+            )}
+            value={gameMode}
+            options={[
+              {
+                label: __('Visualiser', 'gutemberg-chessboard'),
+                value: 'visualize',
+              },
+              {
+                label: __('1 Joueur', 'gutemberg-chessboard'),
+                value: '1player',
+              },
+              {
+                label: __('2 Joueurs', 'gutemberg-chessboard'),
+                value: '2players',
+              },
+            ]}
+            onChange={handleGameModeChange}
+          />
+          <ToggleControl
+            label={__('Activer Stockfish', 'gutemberg-chessboard')}
+            checked={attributes.useStockfish}
+            onChange={(val) => setAttributes({ useStockfish: val })}
+          />
+          {attributes.useStockfish && (
+            <>
+              <RangeControl
+                label={__('Niveau de difficulté (ELO)', 'gutemberg-chessboard')}
+                value={attributes.stockfishElo}
+                onChange={(val) => setAttributes({ stockfishElo: val })}
+                min={1320}
+                max={2800}
+                step={10}
+              />
+              <ToggleControl
+                label={__(
+                  "Afficher la barre d'évaluation",
+                  'gutemberg-chessboard'
+                )}
+                checked={attributes.showEvaluationBar}
+                onChange={(val) => setAttributes({ showEvaluationBar: val })}
+              />
+            </>
+          )}
         </PanelBody>
       </InspectorControls>
 

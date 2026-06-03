@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [1.0.5] - 2026-06-03
+
+### Added
+- Ajout d'une info-bulle (tooltip) native au survol de la barre d'évaluation indiquant le score précis (ex : `+1.50`, `-0.75`) ou l'annonce de mat (ex : `Mat #3B` pour les Blancs, `Mat #1N` pour les Noirs).
+- Nouvelle méthode d'API `getOrientation()` sur la classe `BoardApi` pour récupérer l'orientation dynamique réelle du plateau.
+
+### Fixed
+- Correction du sens de la barre d'évaluation Stockfish cp et mate (les valeurs positives en blanc et négatives en noir étaient précédemment inversées).
+- Correction de l'alignement et de la direction de la barre d'évaluation lors de l'orientation/retournement de l'échiquier.
+- Résolution du problème de droit de déplacement / synchronisation au lancement d'une nouvelle partie contre Stockfish (permettant enfin de déplacer les pièces et d'empêcher les coups illégaux).
+
 ## [1.0.4] - 2026-06-03
 
 ### Added

@@ -91,9 +91,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     let makeStockfishMove = () => {};
+    let updateEvaluationBar = () => {};
     let currentStockfishColor = null;
     let currentStockfishElo = stockfishElo;
     let stockfishWorker = null;
+    let lastScoreType = 'cp';
+    let lastScoreValue = 0;
 
     // DOM Elements for Visitor Interface
     const configDialog = block.querySelector('.chess-config-dialog');
@@ -220,25 +223,47 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         };
 
-        const updateEvaluationBar = (scoreType, scoreValue) => {
+        updateEvaluationBar = (scoreType, scoreValue) => {
+          if (scoreType !== undefined) {
+            lastScoreType = scoreType;
+            lastScoreValue = scoreValue;
+          }
+
           const barFill = block.querySelector('.evaluation-bar-fill');
           if (!barFill) return;
+          const barContainer = block.querySelector('.evaluation-bar');
 
           let scoreFromWhite = 0;
-          if (scoreType === 'cp') {
+          if (lastScoreType === 'cp') {
             scoreFromWhite =
-              currentStockfishColor === 'white' ? -scoreValue : scoreValue;
-          } else if (scoreType === 'mate') {
+              currentStockfishColor === 'white' ? lastScoreValue : -lastScoreValue;
+          } else if (lastScoreType === 'mate') {
             const isWhiteAdvantage =
-              (currentStockfishColor === 'white' && scoreValue < 0) ||
-              (currentStockfishColor === 'black' && scoreValue > 0);
+              (currentStockfishColor === 'white' && lastScoreValue > 0) ||
+              (currentStockfishColor === 'black' && lastScoreValue < 0);
             scoreFromWhite = isWhiteAdvantage ? 1000 : -1000;
+          }
+
+          if (barContainer) {
+            let tooltipText = '';
+            if (lastScoreType === 'cp') {
+              const evalFromWhite = scoreFromWhite / 100;
+              const sign = evalFromWhite > 0 ? '+' : '';
+              tooltipText = `${sign}${evalFromWhite.toFixed(2)}`;
+            } else if (lastScoreType === 'mate') {
+              const isWhiteAdvantage =
+                (currentStockfishColor === 'white' && lastScoreValue > 0) ||
+                (currentStockfishColor === 'black' && lastScoreValue < 0);
+              const absMoves = Math.abs(lastScoreValue);
+              const sideChar = isWhiteAdvantage ? 'B' : 'N';
+              tooltipText = `Mat #${absMoves}${sideChar}`;
+            }
+            barContainer.setAttribute('title', tooltipText);
           }
 
           const clampedScore = Math.max(-1000, Math.min(1000, scoreFromWhite));
           const percentageWhite = 50 + (clampedScore / 1000) * 50;
-          const currentOrientation =
-            block.getAttribute('data-orientation') || 'white';
+          const currentOrientation = boardAPI.getOrientation();
 
           if (currentOrientation === 'white') {
             barFill.style.height = `${percentageWhite}%`;
@@ -327,13 +352,16 @@ document.addEventListener('DOMContentLoaded', () => {
           // Hide configuration dialog
           configDialog.style.display = 'none';
 
+          // Update player color first to ensure state synchronization
+          mockProps.playerColor = playerChosenColor;
+
           // Reset board position and orientation, and enable interactivity
           boardAPI.resetBoard();
           boardAPI.setConfig({
             viewOnly: false,
             orientation: playerChosenColor,
+            fen: boardAPI.getFen(),
           });
-          mockProps.playerColor = playerChosenColor;
 
           // Configure Stockfish level strength and new game ELO
           if (stockfishWorker) {
@@ -348,6 +376,8 @@ document.addEventListener('DOMContentLoaded', () => {
           }
 
           updateStatus();
+          // Reset evaluation bar to equal position at start of a new game
+          updateEvaluationBar('cp', 0);
           // Ask Stockfish to move if Stockfish plays White
           makeStockfishMove();
         });
@@ -369,6 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (flipBoardBtn) {
       flipBoardBtn.addEventListener('click', () => {
         boardAPI.toggleOrientation();
+        updateEvaluationBar();
       });
     }
 

@@ -112,6 +112,11 @@ move(move: string | Move): boolean;
 getTurnColor(): Color;
 
 /**
+ * Returns the current board orientation ('white' or 'black').
+ */
+getOrientation(): Color;
+
+/**
  * Returns all possible moves for the current position.
  */
 getPossibleMoves(): Map<Key, Key[]> | undefined;

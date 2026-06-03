@@ -511,6 +511,14 @@ export class BoardApi {
   }
 
   /**
+   * returns the current board orientation
+   * @returns 'white' or 'black'
+   */
+  getOrientation(): Color {
+    return this.board.state.orientation;
+  }
+
+  /**
    * returns all possible moves for the current position
    *
    */

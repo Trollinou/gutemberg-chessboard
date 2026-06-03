@@ -2,17 +2,14 @@
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 2,
   "name": "gutemberg-chessboard/chessboard",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "title": "Gutenberg Chessboard",
   "category": "widgets",
   "icon": "games",
   "description": "A native Gutenberg chessboard block for WordPress, powered by Chessground and chess.js.",
   "supports": {
     "html": false,
-    "align": [
-      "wide",
-      "full"
-    ]
+    "align": ["wide", "full"]
   },
   "attributes": {
     "boardConfig": {
@@ -56,6 +53,18 @@
       "default": true
     },
     "viewOnly": {
+      "type": "boolean",
+      "default": true
+    },
+    "useStockfish": {
+      "type": "boolean",
+      "default": false
+    },
+    "stockfishElo": {
+      "type": "number",
+      "default": 1500
+    },
+    "showEvaluationBar": {
       "type": "boolean",
       "default": false
     }

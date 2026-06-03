@@ -611,6 +611,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
           {attributes.useStockfish && (
             <>
               <RangeControl
+                __next40pxDefaultSize
                 label={__('Niveau de difficulté (ELO)', 'gutemberg-chessboard')}
                 value={attributes.stockfishElo}
                 onChange={(val) => setAttributes({ stockfishElo: val })}
@@ -663,17 +664,19 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             <div className="chess-status">
               {__('À vous de jouer', 'gutemberg-chessboard')}
             </div>
-            <div className="chess-controls">
-              <button type="button" className="control-btn new-game">
-                {__('Nouvelle partie', 'gutemberg-chessboard')}
-              </button>
-              <button type="button" className="control-btn flip-board">
-                {__('Retourner', 'gutemberg-chessboard')}
-              </button>
-              <button type="button" className="control-btn undo-move">
-                {__('Annuler', 'gutemberg-chessboard')}
-              </button>
-            </div>
+            {!attributes.freeMode && (
+              <div className="chess-controls">
+                <button type="button" className="control-btn new-game">
+                  {__('Nouvelle partie', 'gutemberg-chessboard')}
+                </button>
+                <button type="button" className="control-btn flip-board">
+                  {__('Retourner', 'gutemberg-chessboard')}
+                </button>
+                <button type="button" className="control-btn undo-move">
+                  {__('Annuler', 'gutemberg-chessboard')}
+                </button>
+              </div>
+            )}
           </>
         )}
       </section>

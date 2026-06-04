@@ -173,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const boardAPI = new BoardApi(mountElement, state, mockProps, emit);
+    block.boardAPI = boardAPI;
 
     const initialFen =
       fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';

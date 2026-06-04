@@ -35,6 +35,22 @@ The block supports the following settings saved in the block metadata:
 - **`promotionDialogState`**: Internal object tracking pawn promotion dialog overlay.
 - **`historyViewerState`**: Internal object tracking history navigation viewer.
 
+## Exposing the Board API
+
+For advanced integrations (like custom game navigation or backend integration), the `BoardApi` instance is attached directly to the `.gutemberg-chessboard-block` DOM elements:
+
+```javascript
+const block = document.querySelector('.gutemberg-chessboard-block');
+if (block && block.boardAPI) {
+  // Load a PGN game
+  block.boardAPI.loadPgn('1. e4 e5 ...');
+  
+  // Navigate history
+  block.boardAPI.viewHistory(2); // View position after 2nd move
+  block.boardAPI.viewNext();     // View next move
+}
+```
+
 ## Origin & Attribution
 
 This project is a complete rewrite of the original [vue3-chessboard](https://github.com/qwerty084/vue3-chessboard) Vue 3 component library, adapted to run as a native Gutenberg block in the React-based WordPress environment.

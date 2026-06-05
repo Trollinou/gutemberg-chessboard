@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Correction de l'alignement et de la direction de la barre d'évaluation lors de l'orientation/retournement de l'échiquier.
 - Résolution du problème de droit de déplacement / synchronisation au lancement d'une nouvelle partie contre Stockfish (permettant enfin de déplacer les pièces et d'empêcher les coups illégaux).
 
+### Refactored
+- **Centralisation API** : Déplacement de la logique d'annulation double (`undoMove`), du formatage des pièces capturées (`getFormattedCapturedPieces`), de la différence matérielle (`getMaterialDiffDisplay`) et du message de fin de partie (`getGameOverReason`) depuis la vue front-end vers la classe `BoardApi.ts`.
+
 ## [1.0.4] - 2026-06-03
 
 ### Added

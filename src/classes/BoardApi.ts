@@ -922,12 +922,86 @@ export class BoardApi {
    * If viewing history, views the previous move to the one currently being viewed.
    * Else, starts viewing history and views the move previous to the latest move.
    */
+  /**
+   * If viewing history, views the previous move to the one currently being viewed.
+   * Else, starts viewing history and views the move previous to the latest move.
+   */
   viewPrevious(): void {
     const ply = this.boardState.historyViewerState.isEnabled
       ? this.boardState.historyViewerState.plyViewing
       : this.getCurrentPlyNumber();
     this.viewHistory(ply - 1);
   }
+
+  /**
+   * Undo moves. If vsComputer is true, it undos two moves if it is the player's turn
+   * (to revert both the computer's response and the player's move) or one move if it is the computer's turn.
+   */
+  undoMove(vsComputer = false): void {
+    if (vsComputer) {
+      const turnColor = this.getTurnColor();
+      const playerColor = this.props.playerColor || this.getOrientation();
+      if (turnColor === playerColor) {
+        this.undoLastMove();
+        this.undoLastMove();
+      } else {
+        this.undoLastMove();
+      }
+    } else {
+      this.undoLastMove();
+    }
+  }
+
+  /**
+   * Returns captured pieces mapped directly to Unicode symbols.
+   * white contains captured white pieces (captured by black).
+   * black contains captured black pieces (captured by white).
+   */
+  getFormattedCapturedPieces(): { white: string[]; black: string[] } {
+    const captured = this.getCapturedPieces();
+    const pieceToSymbol = (p: PieceSymbol | Piece) => {
+      const type = typeof p === 'string' ? p : p?.type;
+      if (!type) return '';
+      const map: Record<string, string> = { p: '♟', n: '♞', b: '♝', r: '♜', q: '♛', k: '♚' };
+      return map[type.toLowerCase()] || '';
+    };
+
+    return {
+      white: captured.black.map(pieceToSymbol),
+      black: captured.white.map(pieceToSymbol),
+    };
+  }
+
+  /**
+   * Calculates material difference from player's perspective.
+   */
+  getMaterialDiffDisplay(playerColor: 'white' | 'black'): { player: number | null; opponent: number | null } {
+    const diff = this.getMaterialCount().materialDiff;
+    if (diff === 0) return { player: null, opponent: null };
+    const playerWins = playerColor === 'white' ? diff > 0 : diff < 0;
+    return {
+      player: playerWins ? Math.abs(diff) : null,
+      opponent: !playerWins ? Math.abs(diff) : null,
+    };
+  }
+
+  /**
+   * Returns a user-friendly explanation of the game over reason in French.
+   * If the game is not over, returns an empty string.
+   */
+  getGameOverReason(): string {
+    if (!this.getIsGameOver()) return '';
+    if (this.getIsCheckmate()) {
+      const winner = this.getTurnColor() === 'white' ? 'Noirs' : 'Blancs';
+      return `Échec et mat ! Les ${winner} ont gagné.`;
+    }
+    if (this.getIsStalemate()) return 'Match nul par Pat.';
+    if (this.getIsThreefoldRepetition()) return 'Match nul par triple répétition.';
+    if (this.getIsInsufficientMaterial()) return 'Match nul par matériel insuffisant.';
+    if (this.getIsDraw()) return 'Match nul (règle des 50 coups).';
+    return 'Match nul.';
+  }
 }
 
 export default BoardApi;
+

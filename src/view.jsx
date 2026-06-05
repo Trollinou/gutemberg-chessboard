@@ -124,20 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       if (boardAPI.getIsGameOver()) {
-        if (boardAPI.getIsCheckmate()) {
-          const loserColor = boardAPI.getTurnColor();
-          const winnerText = loserColor === 'white' ? 'Noirs' : 'Blancs';
-          statusElement.textContent = `Échec et mat ! Les ${winnerText} ont gagné. Partie terminée.`;
-        } else if (boardAPI.getIsStalemate()) {
-          statusElement.textContent = 'Pat ! Partie nulle.';
-        } else if (boardAPI.getIsThreefoldRepetition()) {
-          statusElement.textContent = 'Partie nulle - Répétition de position !';
-        } else if (boardAPI.getIsInsufficientMaterial()) {
-          statusElement.textContent = 'Partie nulle - Matériel insuffisant !';
-        } else if (boardAPI.getIsDraw()) {
-          statusElement.textContent =
-            'Partie nulle - Règle des 50 coups ou accord !';
-        }
+        statusElement.textContent = boardAPI.getGameOverReason();
         return;
       }
 
@@ -406,17 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (undoMoveBtn) {
       undoMoveBtn.addEventListener('click', () => {
-        if (useStockfish) {
-          const turnColor = boardAPI.getTurnColor();
-          if (turnColor === currentStockfishColor) {
-            boardAPI.undoLastMove();
-          } else {
-            boardAPI.undoLastMove();
-            boardAPI.undoLastMove();
-          }
-        } else {
-          boardAPI.undoLastMove();
-        }
+        boardAPI.undoMove(useStockfish);
         updateStatus();
       });
     }

@@ -627,6 +627,20 @@ export default function Edit({ attributes, setAttributes, clientId }) {
                     max={2800}
                     step={10}
                   />
+                  <SelectControl
+                    __next40pxDefaultSize
+                    label={__('Cadence (Pendule)', 'gutemberg-chessboard')}
+                    value={attributes.clockPreset || 'none'}
+                    options={[
+                      { label: __('Sans pendule', 'gutemberg-chessboard'), value: 'none' },
+                      { label: __('1 min (Bullet)', 'gutemberg-chessboard'), value: '1+0' },
+                      { label: __('3 min + 2 s (Blitz)', 'gutemberg-chessboard'), value: '3+2' },
+                      { label: __('5 min KO (Blitz)', 'gutemberg-chessboard'), value: '5+0' },
+                      { label: __('10 min + 5 s (Rapide)', 'gutemberg-chessboard'), value: '10+5' },
+                      { label: __('15 min + 10 s (Rapide)', 'gutemberg-chessboard'), value: '15+10' },
+                    ]}
+                    onChange={(val) => setAttributes({ clockPreset: val })}
+                  />
                   <ToggleControl
                     label={__(
                       "Afficher la barre d'évaluation",

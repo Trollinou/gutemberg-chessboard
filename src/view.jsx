@@ -1,6 +1,12 @@
 import { BoardApi } from './classes/BoardApi';
+import { ChessClock } from './classes/ChessClock';
 
 document.addEventListener('DOMContentLoaded', async () => {
+  if (window.gutembergChessboardViewInitialized) {
+    return;
+  }
+  window.gutembergChessboardViewInitialized = true;
+
   const blocks = document.querySelectorAll('.gutemberg-chessboard-block');
 
   for (const block of blocks) {
@@ -21,6 +27,106 @@ document.addEventListener('DOMContentLoaded', async () => {
     );
 
     const freeMode = block.getAttribute('data-free-mode') === 'true';
+    const showMaterialIndicator = block.getAttribute('data-show-material-indicator') !== 'false';
+    const showEvaluationBar = block.getAttribute('data-show-evaluation-bar') === 'true';
+    const initialClockPreset = block.getAttribute('data-clock-preset') || 'none';
+
+    console.log('[Chessboard Debug]', {
+      fen,
+      orientation,
+      coordinates,
+      viewOnly,
+      playerColor,
+      showThreats,
+      useStockfish,
+      stockfishElo,
+      freeMode,
+      showMaterialIndicator,
+      initialClockPreset
+    });
+
+    // Ensure captured bars exist in the DOM (for backwards compatibility with old posts)
+    let topBar = block.querySelector('.captured-clock-top');
+    let bottomBar = block.querySelector('.captured-clock-bottom');
+    const mainWrap = block.querySelector('.main-wrap');
+    const mainBoard = block.querySelector('.main-board');
+
+    if (mainWrap && mainBoard) {
+      if (!topBar) {
+        topBar = document.createElement('div');
+        topBar.className = 'captured-clock-top captured-bar';
+        topBar.innerHTML = `
+          <div class="material-wrapper opponent-material" style="display: ${showMaterialIndicator ? 'block' : 'none'};"></div>
+          <div class="player-info">Adversaire</div>
+          <span class="captured-pieces-clock-opp captured-pieces"></span>
+          <div class="game-clock opponent-clock" style="display: ${initialClockPreset !== 'none' ? 'block' : 'none'};">--:--</div>
+        `;
+        mainWrap.insertBefore(topBar, mainBoard);
+      }
+      if (!bottomBar) {
+        bottomBar = document.createElement('div');
+        bottomBar.className = 'captured-clock-bottom captured-bar';
+        bottomBar.innerHTML = `
+          <div class="material-wrapper player-material" style="display: ${showMaterialIndicator ? 'block' : 'none'};"></div>
+          <div class="player-info">Toi</div>
+          <span class="captured-pieces-clock-player captured-pieces"></span>
+          <div class="game-clock player-clock" style="display: ${initialClockPreset !== 'none' ? 'block' : 'none'};">--:--</div>
+        `;
+        mainWrap.insertBefore(bottomBar, mainBoard.nextSibling);
+      }
+
+      // Initialize display of top/bottom bars based on settings using hidden-bar class
+      const barsActive = showMaterialIndicator || initialClockPreset !== 'none';
+      topBar.classList.toggle('hidden-bar', !barsActive);
+      bottomBar.classList.toggle('hidden-bar', !barsActive);
+    }
+
+    // Ensure correct display of clocks based on preset on load
+    const opponentClockEl = block.querySelector('.opponent-clock');
+    const playerClockEl = block.querySelector('.player-clock');
+    if (opponentClockEl && playerClockEl) {
+      if (initialClockPreset !== 'none') {
+        opponentClockEl.style.display = 'block';
+        playerClockEl.style.display = 'block';
+      } else {
+        opponentClockEl.style.display = 'none';
+        playerClockEl.style.display = 'none';
+      }
+    }
+
+    // Ensure the cadence select exists in the config dialog content (for backwards compatibility)
+    const activeConfigDialog = block.querySelector('.chess-config-dialog');
+    if (useStockfish && activeConfigDialog) {
+      const dialogContent = activeConfigDialog.querySelector('.config-dialog-content');
+      let cadenceSelector = activeConfigDialog.querySelector('.cadence-selector');
+      if (dialogContent && !cadenceSelector) {
+        cadenceSelector = document.createElement('div');
+        cadenceSelector.className = 'cadence-selector';
+        cadenceSelector.innerHTML = `
+          <label>Cadence :</label>
+          <select class="cadence-select">
+            <option value="none" ${initialClockPreset === 'none' ? 'selected' : ''}>Sans pendule</option>
+            <option value="1+0" ${initialClockPreset === '1+0' ? 'selected' : ''}>1 min (Bullet)</option>
+            <option value="3+2" ${initialClockPreset === '3+2' ? 'selected' : ''}>3 min + 2 s (Blitz)</option>
+            <option value="5+0" ${initialClockPreset === '5+0' ? 'selected' : ''}>5 min KO (Blitz)</option>
+            <option value="10+5" ${initialClockPreset === '10+5' ? 'selected' : ''}>10 min + 5 s (Rapide)</option>
+            <option value="15+10" ${initialClockPreset === '15+10' ? 'selected' : ''}>15 min + 10 s (Rapide)</option>
+          </select>
+        `;
+        const difficultySelector = dialogContent.querySelector('.difficulty-selector');
+        if (difficultySelector) {
+          dialogContent.insertBefore(cadenceSelector, difficultySelector);
+        } else {
+          const startBtnEl = dialogContent.querySelector('.start-btn');
+          dialogContent.insertBefore(cadenceSelector, startBtnEl);
+        }
+      }
+    }
+
+    const cadenceSelect = block.querySelector('.cadence-select');
+    if (cadenceSelect) {
+      cadenceSelect.value = initialClockPreset;
+    }
 
     // If using Stockfish, the board starts in viewOnly until "Commencer" is clicked
     const initialViewOnly = useStockfish ? true : viewOnly;
@@ -183,8 +289,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const boardAPI = new BoardApi(mountElement, state, mockProps, emit);
     block.boardAPI = boardAPI;
 
+    const clock = new ChessClock();
+
     // Clock Settings & State Variables
-    const initialClockPreset = block.getAttribute('data-clock-preset') || 'none';
     const clockSettings = {
       preset: initialClockPreset,
       wtime: 0,
@@ -193,57 +300,31 @@ document.addEventListener('DOMContentLoaded', async () => {
       binc: 0,
     };
     let activeClockColor = null;
-    let clockInterval = null;
     let timerTenths = 0;
 
+    clock.onTick = (wtime, btime) => {
+      clockSettings.wtime = wtime;
+      clockSettings.btime = btime;
+      timerTenths = clock.timerTenths;
+      updateClockDisplays();
+    };
+
+    clock.onTimeOut = (flaggedColor) => {
+      handleTimeOut(flaggedColor);
+    };
+
     const initClockSettings = (preset) => {
-      clockSettings.preset = preset;
-      if (preset === '1+0') {
-        clockSettings.wtime = 60000;
-        clockSettings.btime = 60000;
-        clockSettings.winc = 0;
-        clockSettings.binc = 0;
-      } else if (preset === '3+2') {
-        clockSettings.wtime = 180000;
-        clockSettings.btime = 180000;
-        clockSettings.winc = 2000;
-        clockSettings.binc = 2000;
-      } else if (preset === '5+0') {
-        clockSettings.wtime = 300000;
-        clockSettings.btime = 300000;
-        clockSettings.winc = 0;
-        clockSettings.binc = 0;
-      } else if (preset === '10+5') {
-        clockSettings.wtime = 600000;
-        clockSettings.btime = 600000;
-        clockSettings.winc = 5000;
-        clockSettings.binc = 5000;
-      } else if (preset === '15+10') {
-        clockSettings.wtime = 900000;
-        clockSettings.btime = 900000;
-        clockSettings.winc = 10000;
-        clockSettings.binc = 10000;
-      } else {
-        clockSettings.wtime = 0;
-        clockSettings.btime = 0;
-        clockSettings.winc = 0;
-        clockSettings.binc = 0;
-      }
+      clock.setPreset(preset);
+      clockSettings.preset = clock.preset;
+      clockSettings.wtime = clock.wtime;
+      clockSettings.btime = clock.btime;
+      clockSettings.winc = clock.winc;
+      clockSettings.binc = clock.binc;
     };
     initClockSettings(initialClockPreset);
 
     const formatClockTime = (timeMs) => {
-      if (timeMs <= 0) return '00:00';
-      const totalSeconds = timeMs / 1000;
-      const minutes = Math.floor(totalSeconds / 60);
-      const seconds = Math.floor(totalSeconds % 60);
-
-      if (totalSeconds < 10) {
-        const tenths = Math.floor((timeMs % 1000) / 100);
-        return `${seconds}.${tenths}`;
-      }
-
-      return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      return ChessClock.formatTime(timeMs);
     };
 
     const updateClockDisplays = () => {
@@ -264,10 +345,40 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     };
 
+    const updateCapturedAndMaterial = () => {
+      const orientation = boardAPI.getOrientation();
+      const captures = boardAPI.getFormattedCapturedPieces();
+      const matDiff = boardAPI.getMaterialDiffDisplay(orientation);
+
+      const oppCapturesEl = block.querySelector('.captured-pieces-clock-opp');
+      const playerCapturesEl = block.querySelector('.captured-pieces-clock-player');
+      const oppMaterialEl = block.querySelector('.opponent-material');
+      const playerMaterialEl = block.querySelector('.player-material');
+
+      if (oppCapturesEl) {
+        const oppPieces = showMaterialIndicator ? (orientation === 'white' ? captures.black : captures.white) : [];
+        oppCapturesEl.innerHTML = oppPieces.map(p => `<span class="captured-piece">${p}</span>`).join('');
+      }
+      if (playerCapturesEl) {
+        const playerPieces = showMaterialIndicator ? (orientation === 'white' ? captures.white : captures.black) : [];
+        playerCapturesEl.innerHTML = playerPieces.map(p => `<span class="captured-piece">${p}</span>`).join('');
+      }
+
+      if (oppMaterialEl) {
+        oppMaterialEl.innerHTML = (showMaterialIndicator && matDiff.opponent) ? `<div class="material-count">+${matDiff.opponent}</div>` : '';
+        oppMaterialEl.style.display = showMaterialIndicator ? '' : 'none';
+      }
+      if (playerMaterialEl) {
+        playerMaterialEl.innerHTML = (showMaterialIndicator && matDiff.player) ? `<div class="material-count">+${matDiff.player}</div>` : '';
+        playerMaterialEl.style.display = showMaterialIndicator ? '' : 'none';
+      }
+    };
+
     const handleTimeOut = (flaggedColor) => {
       stopTimer();
       boardAPI.setConfig({ viewOnly: true });
       activeClockColor = null;
+      clock.setActiveColor(null);
 
       const winner = flaggedColor === 'white' ? 'Noirs' : 'Blancs';
       if (statusElement) {
@@ -277,32 +388,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     const startTimer = () => {
-      if (clockInterval) return;
-      clockInterval = setInterval(() => {
-        timerTenths++;
-
-        if (clockSettings.preset !== 'none' && activeClockColor) {
-          if (activeClockColor === 'white') {
-            clockSettings.wtime = Math.max(0, clockSettings.wtime - 100);
-            if (clockSettings.wtime <= 0) {
-              handleTimeOut('white');
-            }
-          } else {
-            clockSettings.btime = Math.max(0, clockSettings.btime - 100);
-            if (clockSettings.btime <= 0) {
-              handleTimeOut('black');
-            }
-          }
-          updateClockDisplays();
-        }
-      }, 100);
+      clock.start();
     };
 
     const stopTimer = () => {
-      if (clockInterval) {
-        clearInterval(clockInterval);
-        clockInterval = null;
-      }
+      clock.stop();
     };
 
     // Initialize clock display at load
@@ -322,7 +412,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         : `position fen ${initialFen}`;
     };
 
-    if (useStockfish) {
+    if (useStockfish || showEvaluationBar) {
       const viewScript = document.querySelector(
         'script[src*="gutemberg-chessboard-view.js"]'
       );
@@ -340,6 +430,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       try {
         const { StockfishManager } = await import('./classes/stockfishManager.ts');
         stockfishManager = new StockfishManager(workerUrl);
+
+        if (showEvaluationBar) {
+          stockfishManager.initEvaluationWorker();
+        }
+        if (useStockfish) {
+          stockfishManager.initOpponentWorker(stockfishElo);
+        }
 
         stockfishManager.setCallbacks({
           onBestMove: (bestMove) => {
@@ -362,9 +459,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
         });
 
-        // Initialize both workers
-        stockfishManager.initEvaluationWorker();
-        stockfishManager.initOpponentWorker(currentStockfishElo);
+        // Les workers seront initialisés à la demande (startEvaluation et clic Commencer)
 
         updateEvaluationBar = (scoreType, scoreValue) => {
           if (scoreType !== undefined) {
@@ -425,6 +520,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Set up Visitor interface event listeners
     if (useStockfish && configDialog) {
+      // Preselect color button based on block configuration (handles both/random mapping)
+      colorBtns.forEach((btn) => {
+        const btnColor = btn.getAttribute('data-color');
+        const targetColor = playerColor === 'both' ? 'random' : playerColor;
+        if (btnColor === targetColor) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
       // Color selector click handlers
       colorBtns.forEach((btn) => {
         btn.addEventListener('click', () => {
@@ -464,52 +570,26 @@ document.addEventListener('DOMContentLoaded', async () => {
           // Read chosen cadence select option
           const cadenceSelect = configDialog.querySelector('.cadence-select');
           const chosenPreset = cadenceSelect ? cadenceSelect.value : 'none';
-          clockSettings.preset = chosenPreset;
+          initClockSettings(chosenPreset);
 
-          // Configure Preset parameters
-          if (chosenPreset === '1+0') {
-            clockSettings.wtime = 60000;
-            clockSettings.btime = 60000;
-            clockSettings.winc = 0;
-            clockSettings.binc = 0;
-          } else if (chosenPreset === '3+2') {
-            clockSettings.wtime = 180000;
-            clockSettings.btime = 180000;
-            clockSettings.winc = 2000;
-            clockSettings.binc = 2000;
-          } else if (chosenPreset === '5+0') {
-            clockSettings.wtime = 300000;
-            clockSettings.btime = 300000;
-            clockSettings.winc = 0;
-            clockSettings.binc = 0;
-          } else if (chosenPreset === '10+5') {
-            clockSettings.wtime = 600000;
-            clockSettings.btime = 600000;
-            clockSettings.winc = 5000;
-            clockSettings.binc = 5000;
-          } else if (chosenPreset === '15+10') {
-            clockSettings.wtime = 900000;
-            clockSettings.btime = 900000;
-            clockSettings.winc = 10000;
-            clockSettings.binc = 10000;
-          } else {
-            clockSettings.wtime = 0;
-            clockSettings.btime = 0;
-            clockSettings.winc = 0;
-            clockSettings.binc = 0;
-          }
-
-          // Toggle display of clocks
+          // Toggle display of clocks and captured bars
+          const opponentClockEl = block.querySelector('.opponent-clock');
+          const playerClockEl = block.querySelector('.player-clock');
           const topBar = block.querySelector('.captured-clock-top');
           const bottomBar = block.querySelector('.captured-clock-bottom');
-          if (topBar && bottomBar) {
+          if (opponentClockEl && playerClockEl) {
             if (chosenPreset !== 'none') {
-              topBar.style.display = 'flex';
-              bottomBar.style.display = 'flex';
+              opponentClockEl.style.display = 'block';
+              playerClockEl.style.display = 'block';
             } else {
-              topBar.style.display = 'none';
-              bottomBar.style.display = 'none';
+              opponentClockEl.style.display = 'none';
+              playerClockEl.style.display = 'none';
             }
+          }
+          if (topBar && bottomBar) {
+            const barsActive = showMaterialIndicator || chosenPreset !== 'none';
+            topBar.classList.toggle('hidden-bar', !barsActive);
+            bottomBar.classList.toggle('hidden-bar', !barsActive);
           }
 
           // Hide configuration dialog
@@ -538,17 +618,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
           stopTimer();
           timerTenths = 0;
-          activeClockColor = null;
+          activeClockColor = 'white';
+          clock.setActiveColor('white');
+          startTimer();
           updateClockDisplays();
 
           // Ask Stockfish to move if Stockfish plays White
           if (playerChosenColor === 'black') {
-            activeClockColor = 'white';
-            startTimer();
             makeStockfishMove();
           } else {
-            activeClockColor = 'white'; // Turn is white
+            if (stockfishManager && (showEvaluationBar || isHintEnabled)) {
+              stockfishManager.startEvaluation(getEnginePositionCommand());
+            }
           }
+          updateCapturedAndMaterial();
         });
       }
     }
@@ -556,7 +639,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Control buttons event listeners
     if (newGameBtn) {
       newGameBtn.addEventListener('click', () => {
-        stopTimer();
+        clock.reset();
         boardAPI.resetBoard();
         if (useStockfish && configDialog) {
           boardAPI.setConfig({ viewOnly: true });
@@ -571,13 +654,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         boardAPI.toggleOrientation();
         updateEvaluationBar();
         updateClockDisplays();
+        updateCapturedAndMaterial();
       });
     }
 
     if (undoMoveBtn) {
       undoMoveBtn.addEventListener('click', () => {
         boardAPI.undoMove(useStockfish);
-        // Reset timers active state or revert plies
+        clock.setActiveColor(boardAPI.getTurnColor());
+        activeClockColor = clock.activeColor;
+        updateClockDisplays();
+        updateCapturedAndMaterial();
         updateStatus();
       });
     }
@@ -592,22 +679,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Increment Fischer Time
         const justFinishedColor = turnColor === 'white' ? 'black' : 'white';
-        if (clockSettings.preset !== 'none' && plyCount > 1) {
-          if (justFinishedColor === 'white') {
-            clockSettings.wtime += clockSettings.winc;
-            if (plyCount === 80) clockSettings.wtime += 30000;
-          } else {
-            clockSettings.btime += clockSettings.binc;
-            if (plyCount === 81) clockSettings.btime += 30000;
-          }
-        }
+        clock.applyIncrement(justFinishedColor, plyCount);
+        clockSettings.wtime = clock.wtime;
+        clockSettings.btime = clock.btime;
 
         if (plyCount === 1) {
           startTimer();
         }
 
         activeClockColor = turnColor;
+        clock.setActiveColor(turnColor);
         updateClockDisplays();
+        updateCapturedAndMaterial();
 
         setTimeout(() => {
           if (boardAPI.getTurnColor() === currentStockfishColor) {
@@ -618,11 +701,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else {
               stockfishManager.startOpponentMove(positionCmd, 5000);
             }
-          } else {
+          } else if (stockfishManager) {
             stockfishManager.startEvaluation(getEnginePositionCommand());
           }
         }, 100);
-      } else if (['check', 'checkmate', 'draw', 'stalemate'].includes(event)) {
+      } else if (['checkmate', 'draw', 'stalemate'].includes(event)) {
         stopTimer();
         updateStatus();
       }
@@ -633,9 +716,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Initial status check
     updateStatus();
+    updateCapturedAndMaterial();
 
     if (showThreats) {
       boardAPI.drawMoves();
+    }
+
+    if (stockfishManager && showEvaluationBar) {
+      stockfishManager.startEvaluation(getEnginePositionCommand());
     }
   }
 });

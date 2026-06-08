@@ -104,10 +104,10 @@ export class StockfishManager {
    * Arrête le moteur d'évaluation
    */
   stopEvaluation(): void {
-    if (this.evalWorker && this.isEvalRunning) {
+    if (this.evalWorker) {
       this.evalWorker.postMessage('stop');
-      this.isEvalRunning = false;
     }
+    this.isEvalRunning = false;
   }
 
   /**

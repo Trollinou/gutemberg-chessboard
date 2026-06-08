@@ -622,6 +622,30 @@ cg-board.editor-palette-board {
   color: #aaa;
 }
 
+.cadence-selector {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.cadence-selector label {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+  color: #aaa;
+}
+
+.cadence-select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #555;
+  background: #3a3a3a;
+  color: #fff;
+  font-size: 0.9rem;
+  outline: none;
+  box-sizing: border-box;
+}
+
 .difficulty-selector .elo-value {
   font-weight: 700;
   color: #007cba;
@@ -717,4 +741,82 @@ cg-board.editor-palette-board {
   background: #f0f0f0 !important;
   border-color: #bbb !important;
   color: #333 !important;
+}
+
+.gutemberg-chessboard-block .captured-bar {
+  display: flex !important;
+  align-items: center !important;
+  padding: 6px 12px !important;
+  background: #eee !important;
+  border: 1px solid #ccc !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+}
+
+.gutemberg-chessboard-block .captured-bar.hidden-bar {
+  display: none !important;
+}
+
+.gutemberg-chessboard-block .captured-clock-top {
+  border-radius: 8px 8px 0 0 !important;
+  border-bottom: none !important;
+}
+
+.gutemberg-chessboard-block .captured-clock-bottom {
+  border-radius: 0 0 8px 8px !important;
+  border-top: none !important;
+  margin-bottom: 12px !important;
+}
+
+.gutemberg-chessboard-block .player-info {
+  font-size: 0.75rem !important;
+  font-weight: bold !important;
+  text-transform: uppercase !important;
+  color: #666 !important;
+  min-width: 70px !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+.gutemberg-chessboard-block .captured-pieces {
+  display: flex !important;
+  flex: 1 !important;
+  flex-wrap: nowrap !important;
+  overflow: hidden !important;
+  gap: 1px !important;
+}
+
+.gutemberg-chessboard-block .captured-piece {
+  font-size: 1.2rem !important;
+  line-height: 1 !important;
+  color: #333 !important;
+  font-family: "Lucida Sans Unicode", "Arial Unicode MS", "Noto Sans Chess", sans-serif !important;
+}
+
+.gutemberg-chessboard-block .material-wrapper {
+  min-width: 30px !important;
+  margin-right: 8px !important;
+}
+
+.gutemberg-chessboard-block .material-count {
+  font-size: 0.75rem !important;
+  font-weight: bold !important;
+  color: #15781B !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+.gutemberg-chessboard-block .game-clock {
+  font-family: monospace !important;
+  font-weight: bold !important;
+  font-size: 1.1rem !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  background: #ddd !important;
+  color: #333 !important;
+  min-width: 60px !important;
+  text-align: center !important;
+}
+
+.gutemberg-chessboard-block .game-clock.active {
+  background: #15781B !important;
+  color: #fff !important;
 }

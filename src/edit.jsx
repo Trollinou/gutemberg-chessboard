@@ -328,6 +328,8 @@ export default function Edit({ attributes, setAttributes, clientId }) {
     .filter(Boolean)
     .join(' ');
 
+  const showTopBottomBars = (attributes.showMaterialIndicator !== false) || (attributes.clockPreset && attributes.clockPreset !== 'none');
+
   return (
     <div
       {...blockProps}
@@ -563,6 +565,11 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             checked={attributes.showThreats}
             onChange={(val) => setAttributes({ showThreats: val })}
           />
+          <ToggleControl
+            label={__('Indicateur matériel', 'gutemberg-chessboard')}
+            checked={attributes.showMaterialIndicator !== false}
+            onChange={(val) => setAttributes({ showMaterialIndicator: val })}
+          />
         </PanelBody>
 
         <PanelBody
@@ -659,6 +666,29 @@ export default function Edit({ attributes, setAttributes, clientId }) {
       </InspectorControls>
 
       <section className={wrapClasses}>
+        <div
+          className="captured-clock-top captured-bar"
+          style={{ display: showTopBottomBars ? 'flex' : 'none' }}
+        >
+          <div
+            className="material-wrapper opponent-material"
+            style={{ display: attributes.showMaterialIndicator !== false ? 'block' : 'none' }}
+          ></div>
+          <div className="player-info">{__('Adversaire', 'gutemberg-chessboard')}</div>
+          <span className="captured-pieces-clock-opp captured-pieces"></span>
+          <div
+            className="game-clock opponent-clock"
+            style={{
+              display:
+                attributes.clockPreset && attributes.clockPreset !== 'none'
+                  ? 'block'
+                  : 'none',
+            }}
+          >
+            {attributes.clockPreset && attributes.clockPreset !== 'none' ? attributes.clockPreset : '--:--'}
+          </div>
+        </div>
+
         <div className="main-board">
           {boardState.promotionDialogState.isEnabled && (
             <PromotionDialog
@@ -685,6 +715,30 @@ export default function Edit({ attributes, setAttributes, clientId }) {
             </div>
           )}
         </div>
+
+        <div
+          className="captured-clock-bottom captured-bar"
+          style={{ display: showTopBottomBars ? 'flex' : 'none' }}
+        >
+          <div
+            className="material-wrapper player-material"
+            style={{ display: attributes.showMaterialIndicator !== false ? 'block' : 'none' }}
+          ></div>
+          <div className="player-info">{__('Toi', 'gutemberg-chessboard')}</div>
+          <span className="captured-pieces-clock-player captured-pieces"></span>
+          <div
+            className="game-clock player-clock"
+            style={{
+              display:
+                attributes.clockPreset && attributes.clockPreset !== 'none'
+                  ? 'block'
+                  : 'none',
+            }}
+          >
+            {attributes.clockPreset && attributes.clockPreset !== 'none' ? attributes.clockPreset : '--:--'}
+          </div>
+        </div>
+
         {!attributes.viewOnly && (
           <>
             <div className="chess-status">

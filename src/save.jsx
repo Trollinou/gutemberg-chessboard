@@ -18,25 +18,40 @@ export default function Save({ attributes }) {
     'data-show-evaluation-bar': attributes.showEvaluationBar,
     'data-free-mode': attributes.freeMode,
     'data-clock-preset': attributes.clockPreset || 'none',
+    'data-show-material-indicator': attributes.showMaterialIndicator !== false,
   });
 
   return (
     <div {...blockProps}>
       <section className={`main-wrap ${showBar ? 'has-evaluation-bar' : ''}`}>
-        {!attributes.viewOnly && (
+        <div
+          className="captured-clock-top captured-bar"
+          style={{
+            display:
+              attributes.showMaterialIndicator !== false ||
+              (attributes.clockPreset && attributes.clockPreset !== 'none')
+                ? 'flex'
+                : 'none',
+          }}
+        >
           <div
-            className="captured-clock-top captured-bar"
+            className="material-wrapper opponent-material"
+            style={{ display: attributes.showMaterialIndicator !== false ? 'block' : 'none' }}
+          ></div>
+          <div className="player-info">Adversaire</div>
+          <span className="captured-pieces-clock-opp captured-pieces"></span>
+          <div
+            className="game-clock opponent-clock"
             style={{
               display:
                 attributes.clockPreset && attributes.clockPreset !== 'none'
-                  ? 'flex'
+                  ? 'block'
                   : 'none',
             }}
           >
-            <span className="captured-pieces-clock-opp"></span>
-            <div className="game-clock opponent-clock">--:--</div>
+            --:--
           </div>
-        )}
+        </div>
         <div className="main-board">
           <div className="chessboard-mount-element"></div>
           {showBar && (
@@ -57,21 +72,21 @@ export default function Save({ attributes }) {
                 <div className="color-selector">
                   <button
                     type="button"
-                    className="color-btn white active"
+                    className={`color-btn white${(attributes.playerColor === 'white' || !attributes.playerColor) ? ' active' : ''}`}
                     data-color="white"
                   >
                     Blancs
                   </button>
                   <button
                     type="button"
-                    className="color-btn random"
+                    className={`color-btn random${attributes.playerColor === 'both' ? ' active' : ''}`}
                     data-color="random"
                   >
                     Aléatoire
                   </button>
                   <button
                     type="button"
-                    className="color-btn black"
+                    className={`color-btn black${attributes.playerColor === 'black' ? ' active' : ''}`}
                     data-color="black"
                   >
                     Noirs
@@ -79,15 +94,15 @@ export default function Save({ attributes }) {
                 </div>
                 
                 {/* Sélecteur de cadence (Pendule) */}
-                <div className="cadence-selector" style={{ marginTop: '12px', textAlign: 'left' }}>
-                  <label style={{ display: 'block', marginBottom: '4px', fontWeight: 'bold' }}>Cadence :</label>
-                  <select className="cadence-select" style={{ width: '100%', padding: '6px', borderRadius: '4px', border: '1px solid #ccc' }}>
-                    <option value="none">Sans pendule</option>
-                    <option value="1+0">1 min (Bullet)</option>
-                    <option value="3+2">3 min + 2 s (Blitz)</option>
-                    <option value="5+0">5 min KO (Blitz)</option>
-                    <option value="10+5">10 min + 5 s (Rapide)</option>
-                    <option value="15+10">15 min + 10 s (Rapide)</option>
+                <div className="cadence-selector">
+                  <label>Cadence :</label>
+                  <select className="cadence-select">
+                    <option value="none" selected={attributes.clockPreset === 'none' || !attributes.clockPreset}>Sans pendule</option>
+                    <option value="1+0" selected={attributes.clockPreset === '1+0'}>1 min (Bullet)</option>
+                    <option value="3+2" selected={attributes.clockPreset === '3+2'}>3 min + 2 s (Blitz)</option>
+                    <option value="5+0" selected={attributes.clockPreset === '5+0'}>5 min KO (Blitz)</option>
+                    <option value="10+5" selected={attributes.clockPreset === '10+5'}>10 min + 5 s (Rapide)</option>
+                    <option value="15+10" selected={attributes.clockPreset === '15+10'}>15 min + 10 s (Rapide)</option>
                   </select>
                 </div>
 
@@ -114,20 +129,34 @@ export default function Save({ attributes }) {
             </div>
           )}
         </div>
-        {!attributes.viewOnly && (
+        <div
+          className="captured-clock-bottom captured-bar"
+          style={{
+            display:
+              attributes.showMaterialIndicator !== false ||
+              (attributes.clockPreset && attributes.clockPreset !== 'none')
+                ? 'flex'
+                : 'none',
+          }}
+        >
           <div
-            className="captured-clock-bottom captured-bar"
+            className="material-wrapper player-material"
+            style={{ display: attributes.showMaterialIndicator !== false ? 'block' : 'none' }}
+          ></div>
+          <div className="player-info">Toi</div>
+          <span className="captured-pieces-clock-player captured-pieces"></span>
+          <div
+            className="game-clock player-clock"
             style={{
               display:
                 attributes.clockPreset && attributes.clockPreset !== 'none'
-                  ? 'flex'
+                  ? 'block'
                   : 'none',
             }}
           >
-            <span className="captured-pieces-clock-player"></span>
-            <div className="game-clock player-clock">--:--</div>
+            --:--
           </div>
-        )}
+        </div>
         {!attributes.viewOnly && (
           <>
             <div className="chess-status">À vous de jouer</div>

@@ -82,10 +82,17 @@ export class StockfishManager {
     }
   }
 
+  private lastPositionCommand = '';
+  private evalTimeout: any = null;
+
   /**
    * Démarre l'analyse d'évaluation sur une position (go infinite)
    */
   startEvaluation(positionCommand: string): void {
+    if (this.isEvalRunning && this.lastPositionCommand === positionCommand) {
+      return;
+    }
+    this.lastPositionCommand = positionCommand;
     this.initEvaluationWorker();
     this.stopEvaluation(); // Arrêter tout calcul précédent
 
@@ -97,6 +104,13 @@ export class StockfishManager {
     if (this.evalWorker) {
       this.evalWorker.postMessage(positionCommand);
       this.evalWorker.postMessage('go infinite');
+
+      // Limiter le temps de calcul à 5 secondes
+      this.evalTimeout = setTimeout(() => {
+        if (this.isEvalRunning) {
+          this.stopEvaluation();
+        }
+      }, 5000);
     }
   }
 
@@ -104,6 +118,10 @@ export class StockfishManager {
    * Arrête le moteur d'évaluation
    */
   stopEvaluation(): void {
+    if (this.evalTimeout) {
+      clearTimeout(this.evalTimeout);
+      this.evalTimeout = null;
+    }
     if (this.evalWorker) {
       this.evalWorker.postMessage('stop');
     }

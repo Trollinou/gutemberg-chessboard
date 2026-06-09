@@ -55,24 +55,32 @@ export class ChessClock {
     }
   }
 
+  private lastTickTime = 0;
+
   /**
-   * Starts the 100ms tick interval.
+   * Starts the tick interval using real-time calculation to avoid throttling issues.
    */
   public start(): void {
     if (this.timerInterval) return;
 
+    this.lastTickTime = performance.now();
     this.timerInterval = setInterval(() => {
-      this.timerTenths++;
+      const now = performance.now();
+      const elapsed = now - this.lastTickTime;
+      this.lastTickTime = now;
+
+      // Increment game total duration roughly by the interval steps
+      this.timerTenths += Math.round(elapsed / 100);
 
       if (this.preset !== 'none' && this.activeColor) {
         if (this.activeColor === 'white') {
-          this.wtime = Math.max(0, this.wtime - 100);
+          this.wtime = Math.max(0, this.wtime - elapsed);
           if (this.wtime <= 0) {
             this.stop();
             if (this.onTimeOut) this.onTimeOut('white');
           }
         } else {
-          this.btime = Math.max(0, this.btime - 100);
+          this.btime = Math.max(0, this.btime - elapsed);
           if (this.btime <= 0) {
             this.stop();
             if (this.onTimeOut) this.onTimeOut('black');
